@@ -1,0 +1,11 @@
+{
+  "background_color": "#ffffff",
+  "dir": "ltr",
+  "display": "standalone",
+  "name": "Nova OS",
+  "orientation": "any",
+  "scope": "/",
+  "short_name": "Nova OS",
+  "start_url": "/",
+  "theme_color": "#ffffff"
+}
