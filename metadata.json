@@ -1,0 +1,6 @@
+{
+  "name": "Yaseen OS",
+  "description": "High-performance mobile OS Launcher simulation inspired by Android and Xiaomi HyperOS. Powered by Yaseen.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,4017 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#0b0f19">
+  <title>Yaseen OS</title>
+  <!-- D3.js for Data Visualizations & Analytics -->
+  <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+  <style>
+    /* ========================================================
+       YASEEN OS - ULTRA-SMOOTH MOBILE STYLESHEET
+       ======================================================== */
+    :root {
+      --accent-color: #007aff;
+      --accent-rgb: 0, 122, 255;
+      --accent-gradient: linear-gradient(135deg, #00c6ff, #0072ff);
+      --bg-system: #0b0f19;
+      --surface-glass: rgba(22, 27, 34, 0.72);
+      --surface-glass-border: rgba(255, 255, 255, 0.14);
+      --surface-card: rgba(30, 41, 59, 0.88);
+      --surface-solid: #1e293b;
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --qs-tile-bg: rgba(255, 255, 255, 0.08);
+      --qs-tile-active: #007aff;
+      --status-bar-height: 40px;
+      --nav-bar-height: 46px;
+      --app-radius: 20px;
+      --blur-val: 20px;
+      --anim-speed: 0.28s;
+    }
+
+    /* Battery Saver Mode: Ultra-lightweight, zero heavy blurs for low-end webviews */
+    body.battery-saver-active {
+      --bg-system: #000000;
+      --surface-glass: #111827;
+      --surface-glass-border: rgba(255, 255, 255, 0.08);
+      --surface-card: #131822;
+      --surface-solid: #0f141d;
+      --blur-val: 0px;
+      --anim-speed: 0.15s;
+    }
+    body.battery-saver-active * {
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      box-shadow: none !important;
+    }
+
+    [data-theme="light"] {
+      --bg-system: #f1f5f9;
+      --surface-glass: rgba(255, 255, 255, 0.82);
+      --surface-glass-border: rgba(0, 0, 0, 0.08);
+      --surface-card: rgba(255, 255, 255, 0.94);
+      --surface-solid: #ffffff;
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --text-muted: #94a3b8;
+      --qs-tile-bg: rgba(0, 0, 0, 0.06);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      -webkit-user-select: none;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: var(--bg-system);
+      color: var(--text-primary);
+      font-size: 14px;
+    }
+
+    #os-root {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      background-size: cover;
+      background-position: center;
+      transition: filter var(--anim-speed) ease, transform var(--anim-speed) ease;
+    }
+
+    /* Screen Dimmer for Brightness */
+    #brightness-mask {
+      position: absolute;
+      inset: 0;
+      background-color: #000;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 9990;
+      transition: opacity 0.1s linear;
+    }
+
+    /* Flashlight Torch Overlay */
+    #flashlight-torch {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle, #ffffff 0%, #fff7d6 70%, #ffebad 100%);
+      z-index: 9988;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #1e293b;
+      cursor: pointer;
+    }
+    #flashlight-torch.active {
+      display: flex;
+    }
+
+    /* ========================================================
+       1. TITANIUM AMBIENT LOCK SCREEN (MATCHING USER REFERENCE)
+       ======================================================== */
+    #boot-lock-screen {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(ellipse at 50% 12%, #192434 0%, #0d1219 55%, #080a0f 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 18px 12px;
+      z-index: 9999;
+      color: #ffffff;
+      transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease;
+      touch-action: pan-y;
+      overflow: hidden;
+    }
+    #boot-lock-screen.unlocked {
+      transform: translateY(-100%);
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* Lock Screen Top Status Bar */
+    .lock-status-bar {
+      width: 100%;
+      height: 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      color: #94a3b8;
+      padding: 0 4px;
+    }
+    .lock-status-left, .lock-status-right {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Circular Glowing OS Emblem */
+    .lock-emblem-wrap {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-top: 10px;
+      margin-bottom: 2px;
+    }
+    .lock-emblem-circle {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #38bdf8 0%, #0284c7 50%, #0369a1 100%);
+      box-shadow: 0 0 24px rgba(56, 189, 248, 0.5), inset 0 2px 4px rgba(255, 255, 255, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: emblemFloat 3s ease-in-out infinite alternate;
+    }
+    @keyframes emblemFloat {
+      from { transform: translateY(0); box-shadow: 0 0 20px rgba(56, 189, 248, 0.4); }
+      to { transform: translateY(-3px); box-shadow: 0 0 28px rgba(56, 189, 248, 0.7); }
+    }
+
+    /* Clock & Date */
+    .lock-hero {
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
+    }
+    .lock-hero-clock {
+      font-size: 58px;
+      font-weight: 300;
+      letter-spacing: -2px;
+      line-height: 1;
+      margin: 4px 0 2px;
+      color: #f8fafc;
+      text-shadow: 0 2px 12px rgba(0,0,0,0.5);
+    }
+    .lock-hero-date {
+      font-size: 13.5px;
+      color: #cbd5e1;
+      font-weight: 400;
+      letter-spacing: 0.2px;
+    }
+    .lock-sub-icons {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-top: 8px;
+      font-size: 12px;
+      color: #94a3b8;
+      opacity: 0.85;
+    }
+
+    /* Stacked Dark Frosted Cards */
+    .lock-cards-stack {
+      width: 100%;
+      max-width: 350px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin: 14px 0;
+      flex: 1;
+      justify-content: center;
+    }
+    .lock-card {
+      background: rgba(30, 41, 59, 0.72);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 20px;
+      padding: 13px 16px;
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+      cursor: pointer;
+      transition: transform 0.2s ease, background 0.2s ease;
+    }
+    .lock-card:active {
+      transform: scale(0.98);
+      background: rgba(30, 41, 59, 0.9);
+    }
+    .lock-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+    .lock-card-title {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: #f1f5f9;
+    }
+    .lock-card-badge {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      color: #cbd5e1;
+    }
+    .lock-card-body {
+      font-size: 11px;
+      color: #94a3b8;
+      line-height: 1.4;
+    }
+
+    /* Bottom Frosted Glass Dock */
+    .lock-dock-wrapper {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+    .lock-dock {
+      background: rgba(30, 41, 59, 0.55);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 30px;
+      padding: 8px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      max-width: 340px;
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.55);
+    }
+    .lock-dock-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 21px;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+      transition: transform 0.15s ease;
+      color: #ffffff;
+    }
+    .lock-dock-icon:active {
+      transform: scale(0.92);
+    }
+    .dock-icon-phone {
+      background: linear-gradient(135deg, #22c55e, #15803d);
+    }
+    .dock-icon-messages {
+      background: linear-gradient(135deg, #14b8a6, #0d9488);
+    }
+    .dock-icon-browser {
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    }
+    .dock-icon-camera {
+      background: linear-gradient(135deg, #475569, #334155);
+    }
+    .dock-icon-yaseen {
+      background: linear-gradient(135deg, #eab308 0%, #ca8a04 40%, #78350f 100%);
+      font-weight: 800;
+      font-size: 24px;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.4);
+    }
+    .lock-gesture-bar {
+      width: 90px;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.55);
+      border-radius: 2px;
+      margin-top: 2px;
+      cursor: pointer;
+    }
+
+    /* ========================================================
+       2. TOP STATUS BAR
+       ======================================================== */
+    #status-bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: var(--status-bar-height);
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 1000;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
+      cursor: pointer;
+    }
+
+    .status-left, .status-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .status-notch {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #000000;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    .status-icons svg {
+      width: 15px;
+      height: 15px;
+      fill: currentColor;
+    }
+    .battery-pill {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(0, 0, 0, 0.4);
+      padding: 2px 7px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+    }
+    .battery-bar {
+      width: 20px;
+      height: 10px;
+      border: 1.5px solid currentColor;
+      border-radius: 3px;
+      position: relative;
+      padding: 1px;
+      display: flex;
+      align-items: center;
+    }
+    .battery-bar::after {
+      content: "";
+      position: absolute;
+      right: -3px;
+      top: 2px;
+      width: 2px;
+      height: 4px;
+      background: currentColor;
+      border-radius: 0 1px 1px 0;
+    }
+    .battery-level-fill {
+      height: 100%;
+      background: #10b981;
+      border-radius: 1px;
+      transition: width 0.3s ease, background 0.3s ease;
+    }
+    .battery-saver-active .battery-level-fill {
+      background: #eab308;
+    }
+    .eco-badge {
+      display: none;
+      font-size: 10px;
+      font-weight: 700;
+      color: #eab308;
+      margin-left: 2px;
+    }
+    .battery-saver-active .eco-badge {
+      display: inline;
+    }
+
+    /* ========================================================
+       3. HOME SCREEN & DOCK
+       ======================================================== */
+    #home-screen {
+      flex: 1;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      padding-top: var(--status-bar-height);
+      padding-bottom: var(--nav-bar-height);
+      overflow: hidden;
+      transition: transform var(--anim-speed) ease, opacity var(--anim-speed) ease, filter var(--anim-speed) ease;
+    }
+    #home-screen.drawer-open, #home-screen.recents-open {
+      transform: scale(0.93);
+      opacity: 0.65;
+    }
+
+    .home-pager {
+      flex: 1;
+      display: flex;
+      width: 200%;
+      height: 100%;
+      transition: transform var(--anim-speed) cubic-bezier(0.2, 0.9, 0.3, 1);
+    }
+    .home-page {
+      width: 50%;
+      height: 100%;
+      padding: 10px 16px;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+
+    .widget-row {
+      margin-bottom: 16px;
+    }
+    .hyper-clock-widget {
+      background: var(--surface-glass);
+      backdrop-filter: blur(var(--blur-val));
+      -webkit-backdrop-filter: blur(var(--blur-val));
+      border: 1px solid var(--surface-glass-border);
+      border-radius: 26px;
+      padding: 18px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+      cursor: pointer;
+    }
+    .widget-time {
+      font-size: 40px;
+      font-weight: 300;
+      letter-spacing: -1.5px;
+      line-height: 1;
+    }
+    .widget-date {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-top: 5px;
+      font-weight: 500;
+    }
+    .widget-weather {
+      text-align: right;
+    }
+    .widget-temp {
+      font-size: 24px;
+      font-weight: 600;
+    }
+    .widget-city {
+      font-size: 11.5px;
+      color: var(--text-secondary);
+    }
+
+    .hyper-stats-widget {
+      background: var(--surface-glass);
+      backdrop-filter: blur(var(--blur-val));
+      -webkit-backdrop-filter: blur(var(--blur-val));
+      border: 1px solid var(--surface-glass-border);
+      border-radius: 22px;
+      padding: 12px 16px;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+      cursor: pointer;
+    }
+    .stat-header {
+      font-size: 10.5px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+    .stat-value {
+      font-size: 14px;
+      font-weight: 700;
+      margin: 2px 0 4px;
+    }
+    .stat-progress {
+      height: 4px;
+      background: rgba(255, 255, 255, 0.12);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .stat-bar {
+      height: 100%;
+      border-radius: 2px;
+      background: var(--accent-gradient);
+    }
+
+    .search-widget {
+      background: var(--surface-glass);
+      backdrop-filter: blur(var(--blur-val));
+      -webkit-backdrop-filter: blur(var(--blur-val));
+      border: 1px solid var(--surface-glass-border);
+      border-radius: 26px;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+      cursor: pointer;
+    }
+    .search-widget input {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text-primary);
+      font-size: 13.5px;
+      width: 100%;
+    }
+
+    /* App Icon Grid */
+    .app-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px 10px;
+      padding: 4px 2px;
+    }
+    .app-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      text-align: center;
+      position: relative;
+    }
+    .app-item:active {
+      transform: scale(0.88);
+    }
+    .app-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 17px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.35);
+      overflow: hidden;
+    }
+    .app-icon::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0) 65%);
+      pointer-events: none;
+    }
+    .app-icon svg {
+      width: 28px;
+      height: 28px;
+      fill: #ffffff;
+    }
+    .app-label {
+      font-size: 11.5px;
+      font-weight: 500;
+      color: #ffffff;
+      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.85);
+      max-width: 68px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Unread Badge */
+    .unread-badge {
+      position: absolute;
+      top: -3px;
+      right: 4px;
+      background: #ef4444;
+      color: #ffffff;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 1px 5px;
+      border-radius: 10px;
+      border: 1.5px solid #000000;
+      z-index: 3;
+    }
+
+    .pager-dots {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 0;
+    }
+    .pager-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.35);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .pager-dot.active {
+      width: 16px;
+      border-radius: 4px;
+      background: #ffffff;
+    }
+
+    .dock-container {
+      padding: 0 14px 8px;
+    }
+    .dock {
+      background: var(--surface-glass);
+      backdrop-filter: blur(var(--blur-val));
+      -webkit-backdrop-filter: blur(var(--blur-val));
+      border: 1px solid var(--surface-glass-border);
+      border-radius: 28px;
+      padding: 8px 12px;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+    }
+    .dock .app-item {
+      gap: 0;
+    }
+    .dock .app-label {
+      display: none;
+    }
+
+    /* ========================================================
+       4. QUICK SETTINGS & NOTIFICATION SHADE
+       ======================================================== */
+    #notification-shade {
+      position: absolute;
+      inset: 0;
+      background: rgba(10, 15, 25, 0.88);
+      backdrop-filter: blur(30px);
+      -webkit-backdrop-filter: blur(30px);
+      z-index: 2000;
+      transform: translateY(-100%);
+      transition: transform var(--anim-speed) cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+      padding: var(--status-bar-height) 16px 20px;
+      overflow-y: auto;
+    }
+    #notification-shade.open {
+      transform: translateY(0);
+    }
+
+    .qs-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 4px 14px;
+    }
+    .qs-time {
+      font-size: 26px;
+      font-weight: 600;
+    }
+    .qs-date {
+      font-size: 12.5px;
+      color: var(--text-secondary);
+    }
+    .qs-actions {
+      display: flex;
+      gap: 10px;
+    }
+    .qs-icon-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: #fff;
+    }
+
+    .qs-big-tiles {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .qs-big-tile {
+      background: var(--qs-tile-bg);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 18px;
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .qs-big-tile.active {
+      background: var(--accent-color);
+      color: #fff;
+    }
+    .qs-tile-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .qs-tile-title {
+      font-size: 13px;
+      font-weight: 600;
+      display: block;
+    }
+    .qs-tile-subtitle {
+      font-size: 10.5px;
+      opacity: 0.75;
+      display: block;
+    }
+
+    .qs-small-tiles {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .qs-small-tile {
+      background: var(--qs-tile-bg);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 10px 4px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+      text-align: center;
+    }
+    .qs-small-tile.active {
+      background: var(--accent-color);
+      color: #fff;
+    }
+    .qs-small-tile svg {
+      width: 18px;
+      height: 18px;
+      fill: currentColor;
+    }
+    .qs-small-tile span {
+      font-size: 10.5px;
+      font-weight: 500;
+    }
+
+    .qs-sliders {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .qs-slider-container {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 18px;
+      height: 44px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+    }
+    .qs-slider-fill {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      background: var(--accent-gradient);
+      width: 85%;
+      pointer-events: none;
+    }
+    .qs-slider-content {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      padding: 0 14px;
+      pointer-events: none;
+      font-size: 12.5px;
+      font-weight: 600;
+    }
+    .qs-slider-input {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      z-index: 3;
+    }
+
+    .notifications-section {
+      margin-top: 4px;
+    }
+    .notifications-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      padding: 0 4px;
+    }
+    .notifications-title {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      letter-spacing: 0.5px;
+    }
+    .clear-notifs-btn {
+      font-size: 12px;
+      color: var(--accent-color);
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .notifications-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .notif-card {
+      background: var(--surface-card);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 18px;
+      padding: 12px 14px;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      cursor: pointer;
+    }
+    .notif-card:active {
+      transform: scale(0.98);
+    }
+    .notif-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .notif-top {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 2px;
+    }
+    .notif-app-name {
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+    .notif-time {
+      font-size: 10.5px;
+      color: var(--text-muted);
+    }
+    .notif-content-title {
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .notif-content-desc {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .shade-handle {
+      width: 40px;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.4);
+      border-radius: 2px;
+      margin: 14px auto 0;
+      cursor: pointer;
+    }
+
+    /* ========================================================
+       5. APP DRAWER
+       ======================================================== */
+    #app-drawer {
+      position: absolute;
+      inset: 0;
+      background: var(--surface-glass);
+      backdrop-filter: blur(25px);
+      -webkit-backdrop-filter: blur(25px);
+      z-index: 1500;
+      transform: translateY(100%);
+      transition: transform var(--anim-speed) cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+      padding: calc(var(--status-bar-height) + 8px) 16px var(--nav-bar-height);
+    }
+    #app-drawer.open {
+      transform: translateY(0);
+    }
+    .drawer-search-bar {
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 22px;
+      padding: 9px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .drawer-search-bar input {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text-primary);
+      font-size: 13.5px;
+      width: 100%;
+    }
+    .drawer-categories {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 10px;
+      margin-bottom: 10px;
+      scrollbar-width: none;
+    }
+    .drawer-category-chip {
+      padding: 5px 12px;
+      border-radius: 14px;
+      font-size: 11.5px;
+      font-weight: 500;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--text-secondary);
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .drawer-category-chip.active {
+      background: var(--accent-color);
+      color: #fff;
+    }
+    .drawer-apps-scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding-bottom: 16px;
+    }
+
+    /* ========================================================
+       6. SYSTEM APP VIEWPORT
+       ======================================================== */
+    #app-viewport {
+      position: absolute;
+      inset: 0;
+      background: var(--bg-system);
+      z-index: 1200;
+      transform: scale(0.92) translateY(30px);
+      opacity: 0;
+      pointer-events: none;
+      transition: transform var(--anim-speed) cubic-bezier(0.16, 1, 0.3, 1), opacity var(--anim-speed) ease;
+      display: flex;
+      flex-direction: column;
+      padding-top: var(--status-bar-height);
+      padding-bottom: var(--nav-bar-height);
+      overflow: hidden;
+    }
+    #app-viewport.active {
+      transform: scale(1) translateY(0);
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .system-app-header {
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      background: var(--surface-glass);
+    }
+    .app-header-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .app-header-title {
+      font-size: 16px;
+      font-weight: 600;
+    }
+    .back-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.08);
+      border: none;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    .app-content {
+      flex: 1;
+      overflow-y: auto;
+      position: relative;
+    }
+
+    /* Navigation Bar / Bottom Gesture Bar */
+    #nav-bar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: var(--nav-bar-height);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    .gesture-pill {
+      width: 105px;
+      height: 4.5px;
+      background: rgba(255, 255, 255, 0.6);
+      border-radius: 3px;
+      cursor: pointer;
+    }
+    .gesture-pill:active {
+      background: #ffffff;
+      width: 120px;
+    }
+
+    /* Google Play Store Realistic Styles */
+    .playstore-root {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      background: #111827;
+      color: #f3f4f6;
+      overflow-y: auto;
+    }
+    .ps-header {
+      padding: 12px 14px 6px;
+      position: sticky;
+      top: 0;
+      background: #111827;
+      z-index: 20;
+    }
+    .ps-search-bar {
+      background: #1f2937;
+      border-radius: 24px;
+      padding: 8px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .ps-search-bar input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #fff;
+      font-size: 13.5px;
+    }
+    .ps-nav-tabs {
+      display: flex;
+      gap: 20px;
+      padding: 12px 16px 4px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .ps-tab {
+      color: #9ca3af;
+      padding-bottom: 8px;
+      cursor: pointer;
+      position: relative;
+    }
+    .ps-tab.active {
+      color: #00875f;
+    }
+    .ps-tab.active::after {
+      content: "";
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      right: 0;
+      height: 2.5px;
+      background: #00875f;
+      border-radius: 2px;
+    }
+    .ps-banner {
+      margin: 14px;
+      background: linear-gradient(135deg, #064e3b, #047857);
+      border-radius: 16px;
+      padding: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 8px 20px rgba(4,120,87,0.3);
+    }
+    .ps-section-title {
+      font-size: 15px;
+      font-weight: 700;
+      padding: 14px 16px 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .ps-app-card {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 10px 16px;
+      cursor: pointer;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+    .ps-app-card:active {
+      background: rgba(255,255,255,0.04);
+    }
+    .ps-app-icon {
+      width: 50px;
+      height: 50px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      flex-shrink: 0;
+    }
+    .ps-app-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .ps-app-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: #f9fafb;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .ps-app-dev {
+      font-size: 11.5px;
+      color: #9ca3af;
+      margin: 1px 0;
+    }
+    .ps-app-meta {
+      font-size: 11px;
+      color: #6b7280;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .ps-install-btn {
+      background: #00875f;
+      color: #fff;
+      border: none;
+      padding: 6px 18px;
+      border-radius: 16px;
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+      min-width: 80px;
+      text-align: center;
+    }
+    .ps-install-btn.installed {
+      background: rgba(255,255,255,0.12);
+      color: #34d399;
+    }
+    .ps-install-btn.installing {
+      background: #374151;
+      color: #9ca3af;
+      pointer-events: none;
+    }
+    .ps-progress-bar {
+      height: 4px;
+      width: 100%;
+      background: #374151;
+      border-radius: 2px;
+      overflow: hidden;
+      margin-top: 6px;
+      display: none;
+    }
+    .ps-progress-fill {
+      height: 100%;
+      width: 0%;
+      background: #00875f;
+      transition: width 0.25s linear;
+    }
+
+    /* Mock Auth Modal Styles */
+    .auth-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.78);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      z-index: 10005;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .auth-modal.open {
+      display: flex;
+    }
+    .auth-card {
+      width: 100%;
+      max-width: 360px;
+      background: #1e293b;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 24px;
+      padding: 24px 20px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.55);
+      display: flex;
+      flex-direction: column;
+      animation: zoomIn 0.25s ease-out;
+    }
+    @keyframes zoomIn {
+      from { transform: scale(0.92); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    .auth-tabs {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      padding-bottom: 8px;
+    }
+    .auth-tab {
+      color: #94a3b8;
+      font-weight: 600;
+      font-size: 13.5px;
+      cursor: pointer;
+      padding-bottom: 4px;
+    }
+    .auth-tab.active {
+      color: #38bdf8;
+      border-bottom: 2px solid #38bdf8;
+    }
+    .auth-input {
+      background: #0f172a;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 14px;
+      padding: 11px 14px;
+      color: #fff;
+      font-size: 13px;
+      outline: none;
+      margin-bottom: 10px;
+    }
+    .auth-btn-primary {
+      background: linear-gradient(135deg, #00875f, #005a3e);
+      color: #fff;
+      border: none;
+      border-radius: 14px;
+      padding: 12px;
+      font-size: 13.5px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 4px;
+      margin-bottom: 8px;
+      transition: transform 0.15s ease;
+    }
+    .auth-btn-primary:active {
+      transform: scale(0.97);
+    }
+    .auth-btn-google {
+      background: #ffffff;
+      color: #1f2937;
+      border: none;
+      border-radius: 14px;
+      padding: 11px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    .auth-btn-google:active {
+      transform: scale(0.97);
+    }
+
+    /* Safe Sandboxed TikTok Lite Styles */
+    .tiktok-root {
+      width: 100%;
+      height: 100%;
+      background: #000000;
+      color: #ffffff;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+    }
+    .tiktok-feed {
+      flex: 1;
+      width: 100%;
+      height: 100%;
+      overflow-y: scroll;
+      scroll-snap-type: y mandatory;
+      -webkit-overflow-scrolling: touch;
+    }
+    .tiktok-card {
+      width: 100%;
+      height: 100%;
+      scroll-snap-align: start;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+    }
+    .tiktok-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.65) 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 16px;
+      pointer-events: none;
+    }
+    .tiktok-actions {
+      position: absolute;
+      right: 14px;
+      bottom: 60px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      pointer-events: auto;
+      z-index: 10;
+    }
+    .tiktok-action-btn {
+      background: rgba(255, 255, 255, 0.16);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.2);
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 19px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    .tiktok-action-label {
+      font-size: 10px;
+      margin-top: 2px;
+      font-weight: 700;
+    }
+    .tiktok-info {
+      pointer-events: auto;
+      margin-bottom: 24px;
+      max-width: 80%;
+    }
+    .tiktok-creator {
+      font-size: 14px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .tiktok-desc {
+      font-size: 12px;
+      margin-top: 4px;
+      color: #f1f5f9;
+      line-height: 1.4;
+    }
+    .tiktok-sound {
+      font-size: 11px;
+      color: #38bdf8;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 6px;
+    }
+    .tiktok-disc {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #111, #333);
+      border: 2px solid #fff;
+      animation: spin 3s linear infinite;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+    }
+    .heart-pop {
+      position: absolute;
+      font-size: 68px;
+      color: #ef4444;
+      pointer-events: none;
+      animation: popFade 0.7s forwards;
+      z-index: 20;
+    }
+    @keyframes popFade {
+      0% { transform: scale(0.3); opacity: 0; }
+      50% { transform: scale(1.2); opacity: 1; }
+      100% { transform: scale(1.4) translateY(-25px); opacity: 0; }
+    }
+
+    /* D3.js Battery Chart Styles */
+    .battery-chart-container {
+      padding: 16px;
+      background: var(--surface-card);
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      margin-bottom: 12px;
+    }
+    .battery-metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 14px;
+    }
+    .battery-metric-box {
+      background: rgba(0, 0, 0, 0.25);
+      padding: 10px 8px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      text-align: center;
+    }
+    .battery-metric-val {
+      font-size: 14.5px;
+      font-weight: 700;
+      color: #38bdf8;
+    }
+    .battery-metric-label {
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-top: 2px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .d3-tooltip {
+      position: absolute;
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      padding: 6px 10px;
+      border-radius: 8px;
+      font-size: 11px;
+      color: #fff;
+      pointer-events: none;
+      display: none;
+      z-index: 100;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    }
+
+    /* Mini Browser Toy Styles */
+    .browser-root {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      background: #0f172a;
+    }
+    .browser-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      background: #1e293b;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .browser-url-input {
+      flex: 1;
+      background: #0f172a;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 20px;
+      padding: 6px 14px;
+      color: #fff;
+      font-size: 12.5px;
+      outline: none;
+    }
+    .browser-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 14px;
+    }
+    .browser-card {
+      background: #1e293b;
+      border-radius: 14px;
+      padding: 14px;
+      margin-bottom: 10px;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 4px;
+      padding: 4px;
+    }
+    .gallery-thumb {
+      aspect-ratio: 1;
+      background-size: cover;
+      background-position: center;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .photo-modal {
+      position: fixed;
+      inset: 0;
+      background: #000;
+      z-index: 3000;
+      display: none;
+      flex-direction: column;
+    }
+    .photo-modal.open {
+      display: flex;
+    }
+    .photo-viewer-img {
+      flex: 1;
+      background-size: contain;
+      background-position: center;
+      background-repeat: no-repeat;
+    }
+    .photo-toolbar {
+      height: 56px;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      background: rgba(15, 23, 42, 0.85);
+    }
+    .photo-btn {
+      background: none;
+      border: none;
+      color: #fff;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .camera-viewfinder {
+      width: 100%;
+      height: 100%;
+      background: #000;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+    .camera-canvas {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      inset: 0;
+    }
+    .camera-flash {
+      position: absolute;
+      inset: 0;
+      background: #fff;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.1s ease;
+      z-index: 10;
+    }
+    .camera-bottom {
+      position: absolute;
+      bottom: 20px;
+      left: 0;
+      right: 0;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      z-index: 5;
+    }
+    .camera-shutter {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      background: #fff;
+      border: 4px solid rgba(255, 255, 255, 0.4);
+      cursor: pointer;
+    }
+    .camera-shutter:active {
+      transform: scale(0.9);
+    }
+
+    .settings-list {
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .settings-card {
+      background: var(--surface-card);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 18px;
+      overflow: hidden;
+    }
+    .settings-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 13px 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      cursor: pointer;
+    }
+    .settings-item:last-child {
+      border-bottom: none;
+    }
+    .settings-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .calc-screen {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      padding: 14px;
+    }
+    .calc-display {
+      flex: 1;
+      display: flex;
+      align-items: flex-end;
+      justify-content: flex-end;
+      padding: 20px;
+      font-size: 46px;
+      font-weight: 300;
+    }
+    .calc-pad {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+    .calc-btn {
+      height: 58px;
+      border-radius: 16px;
+      background: var(--surface-card);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      font-size: 20px;
+      font-weight: 500;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    .calc-btn:active {
+      transform: scale(0.92);
+    }
+    .calc-btn.op {
+      background: var(--accent-color);
+    }
+  </style>
+</head>
+<body>
+  <!-- System Root -->
+  <div id="os-root">
+    
+    <!-- Brightness Mask Filter -->
+    <div id="brightness-mask"></div>
+
+    <!-- Screen Flashlight Simulation -->
+    <div id="flashlight-torch" onclick="OS.toggleQS('torch')">
+      <div style="font-size: 54px; margin-bottom: 12px;">🔦</div>
+      <div style="font-size: 20px; font-weight: 700;">FLASHLIGHT ACTIVE</div>
+      <div style="font-size: 13px; opacity: 0.8; margin-top: 6px;">Tap anywhere to turn off</div>
+    </div>
+
+    <!-- ========================================================
+         1. TITANIUM AMBIENT LOCK SCREEN (MATCHING USER REFERENCE)
+         ======================================================== -->
+    <div id="boot-lock-screen" onclick="if(event.target===this)unlockSystem()">
+      <!-- Top Status Bar in Lock Screen -->
+      <div class="lock-status-bar">
+        <div class="lock-status-left">
+          <span>📶 Yaseen 5G</span>
+          <span>•</span>
+          <span>LTE</span>
+        </div>
+        <div class="lock-status-right">
+          <span>76%</span>
+          <svg style="width:14px;height:14px;fill:currentColor" viewBox="0 0 24 24"><path d="M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4z"/></svg>
+        </div>
+      </div>
+
+      <!-- Center Logo & Clock Hero Area -->
+      <div class="lock-hero" onclick="unlockSystem()">
+        <div class="lock-emblem-wrap">
+          <div class="lock-emblem-circle">
+            <svg width="26" height="26" viewBox="0 0 32 32" fill="none">
+              <path d="M16 6L25 19H19.5L16 13.5L12.5 19H7L16 6Z" fill="#ffffff" />
+              <path d="M16 16L21 24H17.5L16 21L14.5 24H11L16 16Z" fill="#e0f2fe" />
+            </svg>
+          </div>
+        </div>
+        <div id="lock-clock" class="lock-hero-clock">10:09</div>
+        <div id="lock-date" class="lock-hero-date">Mon, Oct 27</div>
+        <div class="lock-sub-icons">
+          <span>🔕</span>
+          <span>🔦</span>
+          <span>📱</span>
+          <span>🔋 76%</span>
+        </div>
+      </div>
+
+      <!-- Stacked Dark Frosted Cards -->
+      <div class="lock-cards-stack">
+        <!-- Card 1: Yaseen OS -->
+        <div class="lock-card" onclick="unlockSystem(); OS.openApp('settings')">
+          <div class="lock-card-header">
+            <span class="lock-card-title">Yaseen OS</span>
+            <span class="lock-card-badge">●</span>
+          </div>
+          <div class="lock-card-body">
+            System performance optimal • 60 FPS ultra-low latency • All services running
+          </div>
+        </div>
+
+        <!-- Card 2: Yaseen Notes -->
+        <div class="lock-card" onclick="unlockSystem(); OS.openApp('notes')">
+          <div class="lock-card-header">
+            <span class="lock-card-title">Yaseen Notes</span>
+            <span class="lock-card-badge">⌄</span>
+          </div>
+          <div class="lock-card-body">
+            Meeting notes & quick reminders ready • Tap to open and edit
+          </div>
+        </div>
+
+        <!-- Card 3: System Protection -->
+        <div class="lock-card" onclick="unlockSystem(); OS.openApp('gallery')">
+          <div class="lock-card-header">
+            <span class="lock-card-title">System Protection</span>
+            <span class="lock-card-badge">⌄</span>
+          </div>
+          <div class="lock-card-body">
+            Smart memory sandbox active • 100% privacy isolated
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Frosted Floating Dock -->
+      <div class="lock-dock-wrapper">
+        <div class="lock-dock">
+          <!-- 1. Phone -->
+          <div class="lock-dock-icon dock-icon-phone" onclick="unlockSystem(); OS.openApp('phone')">📞</div>
+          <!-- 2. Messages -->
+          <div class="lock-dock-icon dock-icon-messages" onclick="unlockSystem(); OS.openApp('messages')">💬</div>
+          <!-- 3. Browser -->
+          <div class="lock-dock-icon dock-icon-browser" onclick="unlockSystem(); OS.openApp('browser')">🌐</div>
+          <!-- 4. Camera -->
+          <div class="lock-dock-icon dock-icon-camera" onclick="unlockSystem(); OS.openApp('camera')">📷</div>
+          <!-- 5. Signature Yaseen Golden Icon -->
+          <div class="lock-dock-icon dock-icon-yaseen" onclick="unlockSystem(); OS.openApp('store')">Y</div>
+        </div>
+        <div class="lock-gesture-bar" onclick="unlockSystem()"></div>
+      </div>
+    </div>
+
+    <!-- ========================================================
+         2. TOP PERSISTENT STATUS BAR
+         ======================================================== -->
+    <header id="status-bar" onclick="OS.toggleShade()">
+      <div class="status-left">
+        <span id="status-clock">12:24</span>
+        <span class="eco-badge">🍃 ECO</span>
+      </div>
+
+      <!-- Center Punch-hole Camera Notch -->
+      <div class="status-notch"></div>
+
+      <div class="status-right status-icons">
+        <span id="status-sound-icon">🔔</span>
+        <!-- 5G Network -->
+        <svg viewBox="0 0 24 24"><path d="M2 22h20V2L2 22z"/></svg>
+        <!-- Wi-Fi -->
+        <svg viewBox="0 0 24 24"><path d="M12 4C7.31 4 3.07 5.9 0 8.98L12 21 24 8.98A16.88 16.88 0 0012 4z"/></svg>
+        <!-- Battery Pill -->
+        <div class="battery-pill">
+          <span id="status-battery-pct" style="font-size:11px">88%</span>
+          <div class="battery-bar">
+            <div id="battery-level-fill" class="battery-level-fill" style="width: 88%"></div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- ========================================================
+         3. HOME SCREEN & DESKTOP
+         ======================================================== -->
+    <main id="home-screen">
+      <div class="home-pager" id="home-pager">
+        <!-- Page 1: Main Widgets & Priority Apps -->
+        <section class="home-page" id="home-page-1">
+          <!-- Hyper Clock Widget -->
+          <div class="widget-row">
+            <div class="hyper-clock-widget" onclick="OS.openApp('clock')">
+              <div>
+                <div class="widget-time" id="widget-time">12:24</div>
+                <div class="widget-date" id="widget-date">Mon, Oct 5</div>
+              </div>
+              <div class="widget-weather" onclick="event.stopPropagation(); OS.openApp('weather')">
+                <div class="widget-temp">24° ☀️</div>
+                <div class="widget-city">Sunny • Yaseen City</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Device Health Widget -->
+          <div class="widget-row">
+            <div class="hyper-stats-widget" onclick="OS.openApp('settings')">
+              <div>
+                <div class="stat-header">RAM</div>
+                <div class="stat-value">6.8 / 12G</div>
+                <div class="stat-progress"><div class="stat-bar" style="width: 56%"></div></div>
+              </div>
+              <div>
+                <div class="stat-header">Storage</div>
+                <div class="stat-value">114 / 256G</div>
+                <div class="stat-progress"><div class="stat-bar" style="width: 44%"></div></div>
+              </div>
+              <div>
+                <div class="stat-header">Battery</div>
+                <div class="stat-value" id="stats-battery-health" style="color:#10b981">Optimal</div>
+                <div class="stat-progress"><div class="stat-bar" id="stats-battery-bar" style="width: 88%; background:#10b981"></div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Page 1 Apps Grid -->
+          <div class="app-grid" id="home-grid-p1"></div>
+        </section>
+
+        <!-- Page 2: Search & Utility Apps -->
+        <section class="home-page" id="home-page-2">
+          <div class="search-widget" onclick="OS.openApp('store')">
+            <svg style="width:17px;height:17px;fill:currentColor" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+            <input type="text" placeholder="Search apps, web & store..." readonly />
+          </div>
+          <div class="app-grid" id="home-grid-p2"></div>
+        </section>
+      </div>
+
+      <!-- Pager Indicators -->
+      <div class="pager-dots">
+        <div class="pager-dot active" onclick="OS.switchPage(0)"></div>
+        <div class="pager-dot" onclick="OS.switchPage(1)"></div>
+      </div>
+
+      <!-- Favorites Bottom Dock -->
+      <footer class="dock-container">
+        <div class="dock" id="dock-apps"></div>
+      </footer>
+    </main>
+
+    <!-- ========================================================
+         4. DROP-DOWN QUICK SETTINGS & NOTIFICATIONS
+         ======================================================== -->
+    <aside id="notification-shade">
+      <div class="qs-header">
+        <div>
+          <div class="qs-time" id="qs-time">12:24</div>
+          <div class="qs-date" id="qs-date">Mon, Oct 5</div>
+        </div>
+        <div class="qs-actions">
+          <button class="qs-icon-btn" onclick="OS.openApp('settings')">⚙️</button>
+          <button class="qs-icon-btn" onclick="OS.closeShade()">✕</button>
+        </div>
+      </div>
+
+      <!-- Quick Settings Big Tiles -->
+      <div class="qs-big-tiles">
+        <!-- Wi-Fi -->
+        <div class="qs-big-tile active" id="qs-wifi" onclick="OS.toggleQS('wifi')">
+          <div class="qs-tile-icon">📶</div>
+          <div>
+            <span class="qs-tile-title">Wi-Fi</span>
+            <span class="qs-tile-subtitle">Yaseen_5G</span>
+          </div>
+        </div>
+
+        <!-- Bluetooth -->
+        <div class="qs-big-tile active" id="qs-bluetooth" onclick="OS.toggleQS('bluetooth')">
+          <div class="qs-tile-icon">ᛒ</div>
+          <div>
+            <span class="qs-tile-title">Bluetooth</span>
+            <span class="qs-tile-subtitle">Connected</span>
+          </div>
+        </div>
+
+        <!-- Flashlight -->
+        <div class="qs-big-tile" id="qs-torch" onclick="OS.toggleQS('torch')">
+          <div class="qs-tile-icon">🔦</div>
+          <div>
+            <span class="qs-tile-title">Flashlight</span>
+            <span class="qs-tile-subtitle">Torch Off</span>
+          </div>
+        </div>
+
+        <!-- Battery Saver Mode -->
+        <div class="qs-big-tile" id="qs-batterysaver" onclick="OS.toggleBatterySaver()">
+          <div class="qs-tile-icon">🍃</div>
+          <div>
+            <span class="qs-tile-title">Battery Saver</span>
+            <span class="qs-tile-subtitle" id="qs-saver-sub">Off</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Small Action Tiles -->
+      <div class="qs-small-tiles">
+        <div class="qs-small-tile active" id="qs-darkmode" onclick="OS.toggleQS('darkmode')">
+          <span>🌙</span>
+          <span>Dark Mode</span>
+        </div>
+        <div class="qs-small-tile" id="qs-sound" onclick="OS.toggleMute()">
+          <span id="qs-sound-tile-icon">🔔</span>
+          <span id="qs-sound-tile-label">Sound</span>
+        </div>
+        <div class="qs-small-tile active" id="qs-autorotate" onclick="OS.toggleQS('autorotate')">
+          <span>🔄</span>
+          <span>Auto-rotate</span>
+        </div>
+        <div class="qs-small-tile" onclick="lockSystem()">
+          <span>🔒</span>
+          <span>Lock OS</span>
+        </div>
+      </div>
+
+      <!-- Brightness & Volume Sliders -->
+      <div class="qs-sliders">
+        <div class="qs-slider-container">
+          <div class="qs-slider-fill" id="brightness-slider-fill"></div>
+          <div class="qs-slider-content">
+            <span>☀️ Brightness</span>
+            <span id="qs-brightness-val">85%</span>
+          </div>
+          <input type="range" class="qs-slider-input" min="15" max="100" value="85" oninput="OS.applyBrightness(this.value)">
+        </div>
+
+        <div class="qs-slider-container">
+          <div class="qs-slider-fill" id="volume-slider-fill"></div>
+          <div class="qs-slider-content">
+            <span>🔊 Volume</span>
+            <span id="qs-volume-val">75%</span>
+          </div>
+          <input type="range" class="qs-slider-input" min="0" max="100" value="75" oninput="OS.applyVolume(this.value)">
+        </div>
+      </div>
+
+      <!-- Notifications -->
+      <section class="notifications-section">
+        <div class="notifications-header">
+          <span class="notifications-title">Recent Notifications</span>
+          <div>
+            <button class="clear-notifs-btn" style="margin-right:12px" onclick="OS.triggerMockNotification()">+ Test</button>
+            <button class="clear-notifs-btn" onclick="OS.clearAllNotifications()">Clear All</button>
+          </div>
+        </div>
+        <div class="notifications-list" id="notifications-list"></div>
+      </section>
+
+      <div class="shade-handle" onclick="OS.closeShade()"></div>
+    </aside>
+
+    <!-- ========================================================
+         5. APP DRAWER (Slide Up)
+         ======================================================== -->
+    <section id="app-drawer">
+      <div class="drawer-search-bar">
+        <svg style="width:16px;height:16px;fill:currentColor" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+        <input type="text" id="drawer-search-input" placeholder="Search Yaseen OS..." oninput="OS.filterDrawer(this.value)">
+      </div>
+
+      <div class="drawer-categories">
+        <div class="drawer-category-chip active" onclick="OS.setDrawerCategory('All', this)">All</div>
+        <div class="drawer-category-chip" onclick="OS.setDrawerCategory('System', this)">System</div>
+        <div class="drawer-category-chip" onclick="OS.setDrawerCategory('Tools', this)">Tools</div>
+        <div class="drawer-category-chip" onclick="OS.setDrawerCategory('Media', this)">Media</div>
+        <div class="drawer-category-chip" onclick="OS.setDrawerCategory('Store', this)">Store Apps</div>
+      </div>
+
+      <div class="drawer-apps-scroll" id="drawer-apps-list"></div>
+    </section>
+
+    <!-- ========================================================
+         6. FULL-SCREEN SYSTEM APP VIEWPORT
+         ======================================================== -->
+    <article id="app-viewport">
+      <header class="system-app-header">
+        <div class="app-header-left">
+          <button class="back-btn" onclick="OS.closeApp()">
+            <svg style="width:20px;height:20px;fill:currentColor" viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+          </button>
+          <h1 class="app-header-title" id="app-header-title">Application</h1>
+        </div>
+      </header>
+      <div class="app-content" id="app-content-body"></div>
+    </article>
+
+    <!-- Mock Auth Dialog (Instant Seamless Login / Signup) -->
+    <div id="auth-modal" class="auth-modal" onclick="if(event.target===this)OS.closeAuthModal()">
+      <div class="auth-card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="font-size:24px">🔐</span>
+            <div>
+              <div style="font-weight:700;font-size:16px" id="auth-modal-title">Sign In to Yaseen OS</div>
+              <div style="font-size:11.5px;color:var(--text-secondary)">One account for all apps & Play Store</div>
+            </div>
+          </div>
+          <button class="back-btn" style="width:28px;height:28px" onclick="OS.closeAuthModal()">✕</button>
+        </div>
+
+        <div class="auth-tabs">
+          <div class="auth-tab active" id="auth-tab-signin" onclick="OS.switchAuthTab('signin')">Sign In</div>
+          <div class="auth-tab" id="auth-tab-signup" onclick="OS.switchAuthTab('signup')">Create Account</div>
+        </div>
+
+        <div id="auth-name-group" style="display:none">
+          <input type="text" id="auth-input-name" class="auth-input" placeholder="Your Name" value="Yaseen User">
+        </div>
+        <input type="email" id="auth-input-email" class="auth-input" placeholder="Email address" value="yasse677n@gmail.com">
+        <input type="password" id="auth-input-password" class="auth-input" placeholder="Password" value="••••••••">
+
+        <button class="auth-btn-primary" id="auth-submit-btn" onclick="OS.submitMockAuth()">
+          Sign In Seamlessly
+        </button>
+
+        <div style="text-align:center;font-size:11px;color:var(--text-muted);margin:6px 0">OR</div>
+
+        <button class="auth-btn-google" onclick="OS.mockGoogleSignIn()">
+          <span style="font-size:16px">🌐</span>
+          <span>1-Tap Sign In with Google</span>
+        </button>
+
+        <div style="margin-top:14px;display:flex;justify-content:space-between;font-size:11.5px">
+          <span style="color:#10b981">✓ Instant Auth (Zero Lag)</span>
+          <span style="color:#ef4444;cursor:pointer" onclick="OS.mockSignOut()">Sign Out</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Gesture Navigation -->
+    <nav id="nav-bar">
+      <div class="gesture-pill" onclick="OS.handlePillClick()"></div>
+    </nav>
+
+  </div>
+
+  <!-- ========================================================
+       7. SYSTEM LOGIC ENGINE (PURE JAVASCRIPT)
+       ======================================================== -->
+  <script>
+    // Audio Synthesizer (Zero External Audio Assets)
+    class SoundEngine {
+      constructor() {
+        this.ctx = null;
+        this.muted = localStorage.getItem('yaseen_sound_muted') === 'true';
+      }
+
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          if (AudioContext) this.ctx = new AudioContext();
+        }
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+
+      playNotificationChime() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+        try {
+          const now = this.ctx.currentTime;
+          const osc1 = this.ctx.createOscillator();
+          const osc2 = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+
+          osc1.type = 'sine';
+          osc1.frequency.setValueAtTime(587.33, now); // D5
+          osc1.frequency.exponentialRampToValueAtTime(880, now + 0.15); // A5
+
+          gain.gain.setValueAtTime(0.18, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+
+          osc1.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc1.start(now);
+          osc1.stop(now + 0.35);
+        } catch (_) {}
+      }
+
+      playShutter() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+        try {
+          const bufferSize = this.ctx.sampleRate * 0.08;
+          const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+          const data = buffer.getChannelData(0);
+          for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+
+          const noise = this.ctx.createBufferSource();
+          noise.buffer = buffer;
+          const filter = this.ctx.createBiquadFilter();
+          filter.type = 'bandpass';
+          filter.frequency.setValueAtTime(1200, this.ctx.currentTime);
+          const gain = this.ctx.createGain();
+          gain.gain.setValueAtTime(0.25, this.ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.08);
+
+          noise.connect(filter);
+          filter.connect(gain);
+          gain.connect(this.ctx.destination);
+          noise.start();
+        } catch (_) {}
+      }
+
+      playTone(freq, dur = 0.1) {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+        try {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+          gain.gain.setValueAtTime(0.1, this.ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + dur);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start();
+          osc.stop(this.ctx.currentTime + dur);
+        } catch (_) {}
+      }
+    }
+
+    const sound = new SoundEngine();
+
+    // Lock and Unlock Functions
+    function unlockSystem() {
+      sound.playTone(700, 0.08);
+      OS.vibrate(20);
+      const screen = document.getElementById('boot-lock-screen');
+      if (screen) {
+        screen.classList.add('unlocked');
+      }
+    }
+
+    function lockSystem() {
+      OS.closeShade();
+      OS.closeApp();
+      OS.closeDrawer();
+      sound.playTone(400, 0.1);
+      OS.vibrate(25);
+      const screen = document.getElementById('boot-lock-screen');
+      if (screen) {
+        screen.classList.remove('unlocked');
+      }
+    }
+
+    // Main Yaseen OS Controller
+    const OS = {
+      state: {
+        activeApp: null,
+        isShadeOpen: false,
+        isDrawerOpen: false,
+        activePage: 0,
+        batterySaver: localStorage.getItem('yaseen_battery_saver') === 'true',
+        currentUser: JSON.parse(localStorage.getItem('yaseen_user') || JSON.stringify({
+          isLoggedIn: true,
+          name: 'Yaseen',
+          email: 'yasse677n@gmail.com',
+          avatarText: 'Y'
+        })),
+        accent: localStorage.getItem('yaseen_accent') || '#007aff',
+        wallpaper: localStorage.getItem('yaseen_wallpaper') || 'titanium',
+        brightness: parseInt(localStorage.getItem('yaseen_brightness') || '85', 10),
+        volume: parseInt(localStorage.getItem('yaseen_volume') || '75', 10),
+        toggles: {
+          wifi: true,
+          bluetooth: true,
+          torch: false,
+          darkmode: true,
+          autorotate: true
+        },
+        capturedPhotos: JSON.parse(localStorage.getItem('yaseen_gallery') || '[]'),
+        installedStoreApps: JSON.parse(localStorage.getItem('yaseen_installed_apps') || '["flappy"]'),
+        notifications: [
+          { id: 'n1', app: 'Yaseen OS', title: 'System Boot Complete', desc: 'Welcome to Yaseen OS. Fast, fluid and ultra-smooth.', time: 'Just now', appId: 'settings' },
+          { id: 'n2', app: 'Messages', title: 'Alex Johnson', desc: 'Hey! The new Yaseen OS interface is blazing fast!', time: '2m ago', appId: 'messages' }
+        ],
+        notes: JSON.parse(localStorage.getItem('yaseen_notes') || JSON.stringify([
+          { id: 1, title: 'Yaseen OS Quick Guide', content: 'Swipe down for Quick Settings. Tap Lock OS in Quick Settings to re-lock anytime.', date: 'Today' }
+        ]))
+      },
+
+      // Preset Wallpapers
+      wallpapers: {
+        titanium: 'radial-gradient(ellipse at 50% 12%, #192434 0%, #0d1219 55%, #080a0f 100%)',
+        mars: 'radial-gradient(circle at 75% 25%, #ff5e3a 0%, #a61c1c 40%, #150a14 85%)',
+        space: 'radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%)',
+        geometry: 'linear-gradient(135deg, #1f1c2c 0%, #928dab 100%)',
+        emerald: 'radial-gradient(circle at top left, #059669 0%, #064e3b 50%, #022c22 100%)',
+        sunset: 'linear-gradient(180deg, #3b82f6 0%, #8b5cf6 50%, #ec4899 100%)'
+      },
+
+      // Catalog of Core and Store Apps (Exact Match to Reference Dock)
+      coreApps: [
+        { id: 'phone', name: 'Phone', category: 'System', color: 'linear-gradient(135deg, #22c55e, #15803d)', icon: '📞' },
+        { id: 'messages', name: 'Messages', category: 'System', color: 'linear-gradient(135deg, #14b8a6, #0d9488)', icon: '💬', badge: 1 },
+        { id: 'browser', name: 'Browser', category: 'System', color: 'linear-gradient(135deg, #3b82f6, #1d4ed8)', icon: '🌐' },
+        { id: 'camera', name: 'Camera', category: 'Media', color: 'linear-gradient(135deg, #475569, #334155)', icon: '📷' },
+        { id: 'store', name: 'Play Store', category: 'System', color: 'linear-gradient(135deg, #eab308 0%, #ca8a04 40%, #78350f 100%)', icon: 'Y', badge: 1 },
+        { id: 'gallery', name: 'Gallery', category: 'Media', color: 'linear-gradient(135deg, #ec4899, #be185d)', icon: '🖼️' },
+        { id: 'settings', name: 'Settings', category: 'System', color: 'linear-gradient(135deg, #64748b, #475569)', icon: '⚙️' },
+        { id: 'weather', name: 'Weather', category: 'Tools', color: 'linear-gradient(135deg, #06b6d4, #0891b2)', icon: '⛅' },
+        { id: 'clock', name: 'Clock', category: 'Tools', color: 'linear-gradient(135deg, #6366f1, #4f46e5)', icon: '⏱️' }
+      ],
+
+      storeCatalog: [
+        { id: 'tiktok', name: 'TikTok Lite', dev: 'TikTok Pte. Ltd.', rating: '4.7 ★', size: '14 MB', downloads: '1B+', desc: 'Optimized short video player with instant loading and zero lag', icon: '🎵', category: 'Apps', color: 'linear-gradient(135deg, #000000, #25f4ee)' },
+        { id: 'notes', name: 'QuickNotes Pro', dev: 'Yaseen Productivity', rating: '4.8 ★', size: '6.4 MB', downloads: '5M+', desc: 'Modern rich notepad with instant search and local backup', icon: '📝', category: 'Apps', color: 'linear-gradient(135deg, #f97316, #ea580c)' },
+        { id: 'calculator', name: 'CalcNova Scientific', dev: 'Smart Tools Lab', rating: '4.9 ★', size: '4.8 MB', downloads: '10M+', desc: 'Clean scientific calculator with history and unit converter', icon: '🔢', category: 'Apps', color: 'linear-gradient(135deg, #f59e0b, #d97706)' },
+        { id: 'browser', name: 'Mini Browser Toy', dev: 'Yaseen Systems', rating: '4.7 ★', size: '8.2 MB', downloads: '2M+', desc: 'Lightweight web navigator with bookmarks and simulated portals', icon: '🌐', category: 'Apps', color: 'linear-gradient(135deg, #8b5cf6, #6d28d9)' },
+        { id: 'flappy', name: 'Flappy Jet Arcade', dev: 'Retro Games Studio', rating: '4.6 ★', size: '12 MB', downloads: '15M+', desc: 'Addictive tap-to-fly arcade with high score leaderboard', icon: '🚀', category: 'Games', color: 'linear-gradient(135deg, #ef4444, #b91c1c)' },
+        { id: 'snake', name: 'Retro Snake 97', dev: 'Classic Nostalgia', rating: '4.8 ★', size: '5.1 MB', downloads: '8M+', desc: 'The legendary snake game with touch D-pad and high speed', icon: '🐍', category: 'Games', color: 'linear-gradient(135deg, #10b981, #047857)' },
+        { id: 'beats', name: 'MusicFlow Lo-Fi', dev: 'Acoustic Sound Lab', rating: '4.9 ★', size: '9.5 MB', downloads: '3M+', desc: 'Ambient audio synthesizer with lo-fi beats and relaxing tones', icon: '🎧', category: 'Apps', color: 'linear-gradient(135deg, #8b5cf6, #5b21b6)' },
+        { id: 'crypto', name: 'CryptoPulse Live', dev: 'FinTech Global', rating: '4.7 ★', size: '7.3 MB', downloads: '1M+', desc: 'Real-time Bitcoin & crypto price tickers with live chart trends', icon: '💎', category: 'Apps', color: 'linear-gradient(135deg, #0ea5e9, #0284c7)' },
+        { id: 'sketch', name: 'Sketch Pad Pro', dev: 'Creative Studio', rating: '4.8 ★', size: '6.0 MB', downloads: '4M+', desc: 'Digital drawing canvas with stroke smoothing and gallery export', icon: '🎨', category: 'Apps', color: 'linear-gradient(135deg, #ec4899, #be185d)' }
+      ],
+
+      init() {
+        this.applyBatterySaver(this.state.batterySaver);
+        this.applyAccent(this.state.accent);
+        this.applyWallpaper(this.state.wallpaper);
+        this.applyBrightness(this.state.brightness);
+        this.applyVolume(this.state.volume);
+        this.updateClock();
+        setInterval(() => this.updateClock(), 1000);
+        this.renderAllAppLists();
+        this.renderNotifications();
+        this.bindGestures();
+      },
+
+      vibrate(ms = 15) {
+        if (window.AndroidBridge && window.AndroidBridge.vibrate) {
+          window.AndroidBridge.vibrate(ms);
+        } else if (navigator.vibrate) {
+          navigator.vibrate(ms);
+        }
+      },
+
+      toast(msg) {
+        if (window.AndroidBridge && window.AndroidBridge.showToast) {
+          window.AndroidBridge.showToast(msg);
+        } else {
+          let t = document.getElementById('system-toast');
+          if (!t) {
+            t = document.createElement('div');
+            t.id = 'system-toast';
+            t.style.cssText = 'position:fixed;bottom:70px;left:50%;transform:translateX(-50%);background:rgba(30,41,59,0.95);color:#fff;padding:8px 18px;border-radius:20px;font-size:13px;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,0.4);pointer-events:none;transition:opacity 0.2s;';
+            document.body.appendChild(t);
+          }
+          t.innerText = msg;
+          t.style.opacity = '1';
+          clearTimeout(this._toastTimer);
+          this._toastTimer = setTimeout(() => t.style.opacity = '0', 2000);
+        }
+      },
+
+      updateClock() {
+        const now = new Date();
+        const hrs = String(now.getHours()).padStart(2, '0');
+        const mins = String(now.getMinutes()).padStart(2, '0');
+        const timeStr = `${hrs}:${mins}`;
+
+        const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const dateStr = `${days[now.getDay()]}, ${months[now.getMonth()]} ${now.getDate()}`;
+
+        ['status-clock', 'lock-clock', 'widget-time', 'qs-time'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.innerText = timeStr;
+        });
+
+        const wDate = document.getElementById('widget-date');
+        if (wDate) wDate.innerText = dateStr;
+        const qDate = document.getElementById('qs-date');
+        if (qDate) qDate.innerText = dateStr;
+      },
+
+      // Battery Saver Mode Toggle
+      toggleBatterySaver() {
+        this.vibrate(20);
+        this.state.batterySaver = !this.state.batterySaver;
+        this.applyBatterySaver(this.state.batterySaver);
+        this.toast(this.state.batterySaver ? '🍃 Battery Saver Enabled' : 'Battery Saver Disabled');
+      },
+
+      applyBatterySaver(active) {
+        document.body.classList.toggle('battery-saver-active', active);
+        localStorage.setItem('yaseen_battery_saver', active ? 'true' : 'false');
+        const sub = document.getElementById('qs-saver-sub');
+        if (sub) sub.innerText = active ? 'Eco Active' : 'Off';
+        const tile = document.getElementById('qs-batterysaver');
+        if (tile) tile.classList.toggle('active', active);
+        const health = document.getElementById('stats-battery-health');
+        if (health) health.innerText = active ? 'Eco Saving' : 'Optimal';
+      },
+
+      // Mute / Sound Toggle
+      toggleMute() {
+        this.vibrate(15);
+        sound.muted = !sound.muted;
+        localStorage.setItem('yaseen_sound_muted', sound.muted ? 'true' : 'false');
+        const icon = document.getElementById('status-sound-icon');
+        const tIcon = document.getElementById('qs-sound-tile-icon');
+        const tLbl = document.getElementById('qs-sound-tile-label');
+        if (icon) icon.innerText = sound.muted ? '🔕' : '🔔';
+        if (tIcon) tIcon.innerText = sound.muted ? '🔕' : '🔔';
+        if (tLbl) tLbl.innerText = sound.muted ? 'Muted' : 'Sound';
+        this.toast(sound.muted ? 'Sound Muted' : 'Sound Active');
+      },
+
+      applyAccent(color) {
+        this.state.accent = color;
+        document.documentElement.style.setProperty('--accent-color', color);
+        document.documentElement.style.setProperty('--accent-gradient', `linear-gradient(135deg, ${color}, #00c6ff)`);
+        localStorage.setItem('yaseen_accent', color);
+      },
+
+      applyWallpaper(key) {
+        this.state.wallpaper = key;
+        const root = document.getElementById('os-root');
+        if (root) {
+          if (this.wallpapers[key]) {
+            root.style.background = this.wallpapers[key];
+          } else if (key.startsWith('data:') || key.startsWith('http')) {
+            root.style.backgroundImage = `url('${key}')`;
+          }
+          root.style.backgroundSize = 'cover';
+        }
+        localStorage.setItem('yaseen_wallpaper', key);
+      },
+
+      applyBrightness(val) {
+        this.state.brightness = val;
+        const mask = document.getElementById('brightness-mask');
+        if (mask) {
+          mask.style.opacity = (((100 - val) / 100) * 0.85).toFixed(2);
+        }
+        const text = document.getElementById('qs-brightness-val');
+        if (text) text.innerText = `${val}%`;
+        const fill = document.getElementById('brightness-slider-fill');
+        if (fill) fill.style.width = `${val}%`;
+        localStorage.setItem('yaseen_brightness', val);
+      },
+
+      applyVolume(val) {
+        this.state.volume = val;
+        const text = document.getElementById('qs-volume-val');
+        if (text) text.innerText = `${val}%`;
+        const fill = document.getElementById('volume-slider-fill');
+        if (fill) fill.style.width = `${val}%`;
+        localStorage.setItem('yaseen_volume', val);
+      },
+
+      getAllInstalledApps() {
+        const storeInstalled = this.storeCatalog.filter(a => this.state.installedStoreApps.includes(a.id));
+        return [...this.coreApps, ...storeInstalled];
+      },
+
+      renderAllAppLists() {
+        const all = this.getAllInstalledApps();
+        const p1 = document.getElementById('home-grid-p1');
+        const p2 = document.getElementById('home-grid-p2');
+        const dock = document.getElementById('dock-apps');
+
+        if (p1) {
+          p1.innerHTML = all.slice(0, 8).map(app => this.renderAppIconHtml(app)).join('');
+        }
+        if (p2) {
+          p2.innerHTML = all.slice(8).map(app => this.renderAppIconHtml(app)).join('');
+        }
+        if (dock) {
+          const dockApps = ['phone', 'messages', 'browser', 'camera', 'store'].map(id => all.find(a => a.id === id)).filter(Boolean);
+          dock.innerHTML = dockApps.map(app => this.renderAppIconHtml(app, true)).join('');
+        }
+        this.renderDrawerApps();
+      },
+
+      renderAppIconHtml(app, isDock = false) {
+        return `
+          <div class="app-item" onclick="OS.openApp('${app.id}')">
+            ${app.badge ? `<span class="unread-badge">${app.badge}</span>` : ''}
+            <div class="app-icon" style="background: ${app.color}">
+              <span style="font-size: 26px;">${app.icon}</span>
+            </div>
+            ${!isDock ? `<span class="app-label">${app.name}</span>` : ''}
+          </div>
+        `;
+      },
+
+      renderDrawerApps(query = '', category = 'All') {
+        const list = document.getElementById('drawer-apps-list');
+        if (!list) return;
+        let apps = this.getAllInstalledApps();
+        if (category && category !== 'All') {
+          apps = apps.filter(a => a.category.toLowerCase() === category.toLowerCase());
+        }
+        if (query && query.trim()) {
+          const q = query.toLowerCase().trim();
+          apps = apps.filter(a => a.name.toLowerCase().includes(q));
+        }
+        list.innerHTML = `
+          <div class="app-grid">
+            ${apps.map(a => this.renderAppIconHtml(a)).join('')}
+          </div>
+        `;
+      },
+
+      filterDrawer(val) {
+        this.renderDrawerApps(val, this._drawerCategory || 'All');
+      },
+
+      setDrawerCategory(cat, el) {
+        this._drawerCategory = cat;
+        document.querySelectorAll('.drawer-category-chip').forEach(c => c.classList.remove('active'));
+        if (el) el.classList.add('active');
+        this.renderDrawerApps(document.getElementById('drawer-search-input')?.value || '', cat);
+      },
+
+      // Notification Shade
+      toggleShade() {
+        if (this.state.isShadeOpen) this.closeShade();
+        else this.openShade();
+      },
+      openShade() {
+        this.vibrate(18);
+        this.state.isShadeOpen = true;
+        document.getElementById('notification-shade')?.classList.add('open');
+      },
+      closeShade() {
+        this.vibrate(10);
+        this.state.isShadeOpen = false;
+        document.getElementById('notification-shade')?.classList.remove('open');
+      },
+
+      // App Drawer
+      openDrawer() {
+        this.vibrate(16);
+        this.state.isDrawerOpen = true;
+        document.getElementById('app-drawer')?.classList.add('open');
+        document.getElementById('home-screen')?.classList.add('drawer-open');
+      },
+      closeDrawer() {
+        this.vibrate(10);
+        this.state.isDrawerOpen = false;
+        document.getElementById('app-drawer')?.classList.remove('open');
+        document.getElementById('home-screen')?.classList.remove('drawer-open');
+      },
+
+      switchPage(idx) {
+        this.state.activePage = idx;
+        const pager = document.getElementById('home-pager');
+        if (pager) pager.style.transform = `translateX(-${idx * 50}%)`;
+        document.querySelectorAll('.pager-dot').forEach((d, i) => d.classList.toggle('active', i === idx));
+        this.vibrate(10);
+      },
+
+      // Toggle QS Tiles
+      toggleQS(key) {
+        sound.playTone(550, 0.05);
+        this.vibrate(15);
+        this.state.toggles[key] = !this.state.toggles[key];
+        const tile = document.getElementById(`qs-${key}`);
+        if (tile) tile.classList.toggle('active', this.state.toggles[key]);
+
+        if (key === 'torch') {
+          const on = this.state.toggles.torch;
+          document.getElementById('flashlight-torch')?.classList.toggle('active', on);
+          if (window.AndroidBridge && window.AndroidBridge.toggleFlashlight) {
+            window.AndroidBridge.toggleFlashlight(on);
+          }
+          this.toast(on ? 'Flashlight ON' : 'Flashlight OFF');
+        } else if (key === 'darkmode') {
+          const dark = this.state.toggles.darkmode;
+          document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+          this.toast(dark ? 'Dark Mode' : 'Light Mode');
+        } else if (key === 'wifi') {
+          this.toast(this.state.toggles.wifi ? 'Connected to Yaseen_5G' : 'Wi-Fi Disconnected');
+        } else if (key === 'bluetooth') {
+          this.toast(this.state.toggles.bluetooth ? 'Bluetooth Active' : 'Bluetooth Off');
+        }
+      },
+
+      // Notifications Engine
+      renderNotifications() {
+        const list = document.getElementById('notifications-list');
+        if (!list) return;
+        if (this.state.notifications.length === 0) {
+          list.innerHTML = `<div style="text-align:center;padding:20px;color:var(--text-muted)">No notifications</div>`;
+          return;
+        }
+        list.innerHTML = this.state.notifications.map(n => `
+          <div class="notif-card" onclick="OS.openApp('${n.appId}')">
+            <div class="notif-icon" style="background:var(--accent-gradient);color:#fff">🔔</div>
+            <div style="flex:1">
+              <div class="notif-top">
+                <span class="notif-app-name">${n.app}</span>
+                <span class="notif-time">${n.time}</span>
+              </div>
+              <div class="notif-content-title">${n.title}</div>
+              <div class="notif-content-desc">${n.desc}</div>
+            </div>
+          </div>
+        `).join('');
+      },
+
+      clearAllNotifications() {
+        this.vibrate(20);
+        this.state.notifications = [];
+        this.renderNotifications();
+        this.toast('Notifications cleared');
+      },
+
+      triggerMockNotification() {
+        sound.playNotificationChime();
+        this.vibrate(30);
+        const newNotif = {
+          id: 'n_' + Date.now(),
+          app: 'Yaseen OS',
+          title: 'System Alert',
+          desc: 'High refresh rate simulation active with zero frame drop!',
+          time: 'Just now',
+          appId: 'settings'
+        };
+        this.state.notifications.unshift(newNotif);
+        this.renderNotifications();
+        this.toast('New Notification Received!');
+      },
+
+      // Memory Lifecycle Management & Resource Teardown
+      cleanCurrentApp() {
+        if (this._camTimer) { clearInterval(this._camTimer); this._camTimer = null; }
+        if (this._gameLoop) { cancelAnimationFrame(this._gameLoop); this._gameLoop = null; }
+        if (this._snakeTimer) { clearInterval(this._snakeTimer); this._snakeTimer = null; }
+        if (this._visLoop) { cancelAnimationFrame(this._visLoop); this._visLoop = null; }
+        if (this._lofiInterval) { clearInterval(this._lofiInterval); this._lofiInterval = null; }
+        if (this._cryptoInterval) { clearInterval(this._cryptoInterval); this._cryptoInterval = null; }
+        if (this._watchdogTimer) { clearTimeout(this._watchdogTimer); this._watchdogTimer = null; }
+
+        const content = document.getElementById('app-content-body');
+        if (content) {
+          // Neutralize all iframes to prevent background memory leaks and audio/video playback
+          const iframes = content.querySelectorAll('iframe');
+          iframes.forEach(ifr => {
+            try {
+              ifr.src = 'about:blank';
+              ifr.remove();
+            } catch (_) {}
+          });
+          content.innerHTML = '';
+        }
+      },
+
+      // Open App Viewport with isolated memory sandbox
+      openApp(id) {
+        sound.playTone(600, 0.04);
+        this.vibrate(15);
+        this.cleanCurrentApp();
+        this.closeDrawer();
+        this.closeShade();
+        this.state.activeApp = id;
+
+        const all = this.getAllInstalledApps();
+        const app = all.find(a => a.id === id) || { name: id };
+        document.getElementById('app-header-title').innerText = app.name;
+
+        const content = document.getElementById('app-content-body');
+        if (content) {
+          content.innerHTML = this.getAppHtml(id);
+          try {
+            this.initAppCode(id);
+          } catch (err) {
+            console.warn('App bootstrap error:', err);
+          }
+        }
+
+        document.getElementById('app-viewport')?.classList.add('active');
+      },
+
+      closeApp() {
+        this.vibrate(10);
+        this.cleanCurrentApp();
+        this.state.activeApp = null;
+        document.getElementById('app-viewport')?.classList.remove('active');
+      },
+
+      handlePillClick() {
+        if (this.state.activeApp) this.closeApp();
+        else if (this.state.isDrawerOpen) this.closeDrawer();
+        else if (this.state.isShadeOpen) this.closeShade();
+      },
+
+      // App Views & Templates
+      getAppHtml(id) {
+        switch (id) {
+          case 'tiktok':
+            return `
+              <div class="tiktok-root" id="tiktok-feed-root">
+                <div class="tiktok-feed" id="tiktok-feed-container">
+                  <!-- Video Card 1 -->
+                  <div class="tiktok-card" style="background: radial-gradient(circle at 60% 40%, #1e1b4b 0%, #09090b 100%)" ondblclick="OS.handleTikTokLike(this, event)">
+                    <div style="font-size:72px;opacity:0.8;animation:pulseGlow 2.5s infinite alternate">🌆</div>
+                    <div class="tiktok-overlay">
+                      <div style="display:flex;justify-content:center;gap:18px;font-weight:700;font-size:14px;pointer-events:auto;padding-top:10px">
+                        <span style="opacity:0.6">Following</span>
+                        <span style="border-bottom:2px solid #fff;padding-bottom:2px">For You</span>
+                      </div>
+                      <div class="tiktok-info">
+                        <div class="tiktok-creator">@cyberpunk_city <span style="background:#00f2fe;color:#000;font-size:9px;padding:1px 5px;border-radius:4px">PRO</span></div>
+                        <div class="tiktok-desc">Night in Neo Tokyo 2099 • 60FPS Render on Yaseen OS #cyberpunk #future #ultra</div>
+                        <div class="tiktok-sound">🎵 Original Sound - Neon Synthwave Beats</div>
+                      </div>
+                    </div>
+                    <div class="tiktok-actions">
+                      <button class="tiktok-action-btn" onclick="OS.toggleTikTokLike(this)">
+                        <span>❤️</span>
+                        <span class="tiktok-action-label" id="tt-likes-1">142K</span>
+                      </button>
+                      <button class="tiktok-action-btn" onclick="OS.openTikTokComments()">
+                        <span>💬</span>
+                        <span class="tiktok-action-label">2.4K</span>
+                      </button>
+                      <button class="tiktok-action-btn" onclick="OS.toast('Link Copied to Clipboard!')">
+                        <span>↗️</span>
+                        <span class="tiktok-action-label">Share</span>
+                      </button>
+                      <div class="tiktok-disc">💿</div>
+                    </div>
+                  </div>
+
+                  <!-- Video Card 2 -->
+                  <div class="tiktok-card" style="background: radial-gradient(circle at 40% 60%, #14532d 0%, #022c22 100%)" ondblclick="OS.handleTikTokLike(this, event)">
+                    <div style="font-size:72px;opacity:0.8;animation:pulseGlow 3s infinite alternate">🚀</div>
+                    <div class="tiktok-overlay">
+                      <div></div>
+                      <div class="tiktok-info">
+                        <div class="tiktok-creator">@yaseen_tech <span style="background:#10b981;color:#fff;font-size:9px;padding:1px 5px;border-radius:4px">OFFICIAL</span></div>
+                        <div class="tiktok-desc">Testing the new HyperOS launcher with isolated sandbox webview architecture! 🚀 #android #smooth #zeroLag</div>
+                        <div class="tiktok-sound">🎵 Yaseen OS - Silicon Melody (Remix)</div>
+                      </div>
+                    </div>
+                    <div class="tiktok-actions">
+                      <button class="tiktok-action-btn" onclick="OS.toggleTikTokLike(this)">
+                        <span>❤️</span>
+                        <span class="tiktok-action-label" id="tt-likes-2">389K</span>
+                      </button>
+                      <button class="tiktok-action-btn" onclick="OS.openTikTokComments()">
+                        <span>💬</span>
+                        <span class="tiktok-action-label">6.1K</span>
+                      </button>
+                      <button class="tiktok-action-btn" onclick="OS.toast('Post Shared!')">
+                        <span>↗️</span>
+                        <span class="tiktok-action-label">Share</span>
+                      </button>
+                      <div class="tiktok-disc">💿</div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Safe Sandbox Badge -->
+                <div style="position:absolute;top:10px;left:14px;background:rgba(0,0,0,0.6);border:1px solid rgba(255,255,255,0.15);padding:4px 10px;border-radius:14px;font-size:10px;display:flex;align-items:center;gap:5px;z-index:20">
+                  <span style="color:#10b981">●</span> Safe Sandbox • Zero Lag
+                </div>
+              </div>
+            `;
+
+          case 'store':
+            const tab = this._playStoreTab || 'For you';
+            const filterApps = this.storeCatalog.filter(a => {
+              if (tab === 'Games') return a.category === 'Games';
+              if (tab === 'Apps') return a.category === 'Apps';
+              return true;
+            });
+            return `
+              <div class="playstore-root">
+                <!-- Search & Profile Bar -->
+                <div class="ps-header">
+                  <div class="ps-search-bar">
+                    <span style="font-size:18px">▶️</span>
+                    <input type="text" placeholder="Search apps & games" oninput="OS.filterPlayStore(this.value)">
+                    <span style="opacity:0.7">🎙️</span>
+                    <div style="width:26px;height:26px;border-radius:50%;background:#00875f;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;cursor:pointer" onclick="OS.openAuthModal()">${this.state.currentUser.avatarText || 'Y'}</div>
+                  </div>
+                </div>
+
+                <!-- Tabs -->
+                <div class="ps-nav-tabs">
+                  <div class="ps-tab ${tab === 'For you' ? 'active' : ''}" onclick="OS.setPlayStoreTab('For you')">For you</div>
+                  <div class="ps-tab ${tab === 'Top charts' ? 'active' : ''}" onclick="OS.setPlayStoreTab('Top charts')">Top charts</div>
+                  <div class="ps-tab ${tab === 'Games' ? 'active' : ''}" onclick="OS.setPlayStoreTab('Games')">Games</div>
+                  <div class="ps-tab ${tab === 'Apps' ? 'active' : ''}" onclick="OS.setPlayStoreTab('Apps')">Apps</div>
+                </div>
+
+                <!-- Featured Banner -->
+                <div class="ps-banner">
+                  <div>
+                    <span style="font-size:10px;text-transform:uppercase;letter-spacing:1px;background:rgba(0,0,0,0.3);padding:2px 8px;border-radius:10px">Editor's Choice</span>
+                    <div style="font-size:16px;font-weight:700;margin-top:4px">CalcNova & QuickNotes</div>
+                    <div style="font-size:11.5px;opacity:0.9">Essential tools built for Yaseen OS</div>
+                  </div>
+                  <button class="ps-install-btn" style="background:#fff;color:#064e3b" onclick="OS.installAppWithProgress('calculator')">Get</button>
+                </div>
+
+                <!-- Apps List Section -->
+                <div class="ps-section-title">
+                  <span>${tab === 'Games' ? 'Popular Games' : 'Recommended For You'}</span>
+                  <span style="font-size:12px;color:#00875f;cursor:pointer">See all</span>
+                </div>
+
+                <div id="ps-apps-container">
+                  ${filterApps.map(app => {
+                    const isInstalled = this.state.installedStoreApps.includes(app.id);
+                    return `
+                      <div class="ps-app-card" onclick="OS.showAppDetails('${app.id}')">
+                        <div class="ps-app-icon" style="background:${app.color}">${app.icon}</div>
+                        <div class="ps-app-info">
+                          <div class="ps-app-name">${app.name}</div>
+                          <div class="ps-app-dev">${app.dev}</div>
+                          <div class="ps-app-meta">
+                            <span>${app.rating}</span>
+                            <span>•</span>
+                            <span>${app.size}</span>
+                            <span>•</span>
+                            <span>${app.downloads}</span>
+                          </div>
+                          <div class="ps-progress-bar" id="pbar-${app.id}">
+                            <div class="ps-progress-fill" id="pfill-${app.id}"></div>
+                          </div>
+                        </div>
+                        <div onclick="event.stopPropagation()">
+                          <button class="ps-install-btn ${isInstalled ? 'installed' : ''}" id="pbtn-${app.id}" onclick="OS.handleStoreAction('${app.id}')">
+                            ${isInstalled ? 'Open' : 'Install'}
+                          </button>
+                        </div>
+                      </div>
+                    `;
+                  }).join('')}
+                </div>
+              </div>
+            `;
+
+          case 'gallery':
+            const photos = this.state.capturedPhotos;
+            return `
+              <div style="padding:12px">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+                  <div style="font-weight:600;font-size:16px">Photos (${photos.length})</div>
+                  <button class="store-install-btn" onclick="OS.addMockPhoto()">+ Upload Mock</button>
+                </div>
+                <div class="gallery-grid">
+                  ${photos.length === 0 ? `
+                    <div style="grid-column:span 3;text-align:center;padding:40px 10px;color:var(--text-muted)">
+                      No photos yet. Capture snapshots in Camera or upload mock photos!
+                    </div>
+                  ` : photos.map((p, i) => `
+                    <div class="gallery-thumb" style="background-image:url('${p.data}')" onclick="OS.viewPhoto(${i})"></div>
+                  `).join('')}
+                </div>
+              </div>
+
+              <div id="photo-modal" class="photo-modal">
+                <div class="system-app-header">
+                  <button class="back-btn" onclick="OS.closePhotoModal()">✕</button>
+                  <div style="font-weight:600">Photo Viewer</div>
+                </div>
+                <div id="photo-viewer-img" class="photo-viewer-img"></div>
+                <div class="photo-toolbar">
+                  <button class="photo-btn" onclick="OS.setPhotoWallpaper()">🖼️ Set Wallpaper</button>
+                  <button class="photo-btn" style="color:#ef4444" onclick="OS.deletePhoto()">🗑️ Delete</button>
+                </div>
+              </div>
+            `;
+
+          case 'camera':
+            return `
+              <div class="camera-viewfinder">
+                <canvas id="camera-canvas" class="camera-canvas"></canvas>
+                <div id="camera-flash" class="camera-flash"></div>
+                <div class="camera-bottom">
+                  <div class="app-icon" id="camera-last-thumb" style="width:48px;height:48px;cursor:pointer;background-size:cover" onclick="OS.openApp('gallery')">🖼️</div>
+                  <button class="camera-shutter" onclick="OS.captureSnapshot()"></button>
+                  <button class="back-btn" onclick="OS.toast('Camera lens switched')">🔄</button>
+                </div>
+              </div>
+            `;
+
+          case 'settings':
+            return `
+              <div class="settings-list">
+                <!-- System Banner -->
+                <div class="settings-card" style="padding:18px;background:var(--accent-gradient);color:#fff">
+                  <div style="display:flex;align-items:center;gap:12px">
+                    <div style="font-size:32px">🚀</div>
+                    <div>
+                      <div style="font-size:18px;font-weight:700">Yaseen OS</div>
+                      <div style="font-size:12px;opacity:0.9">Powered by Yaseen • Version 2.0</div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Account Card -->
+                <div class="settings-card" onclick="OS.openAuthModal()" style="cursor:pointer">
+                  <div class="settings-item">
+                    <div class="settings-left">
+                      <div style="width:36px;height:36px;border-radius:50%;background:#00875f;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700">${this.state.currentUser.avatarText || 'Y'}</div>
+                      <div>
+                        <div style="font-weight:600">${this.state.currentUser.name}</div>
+                        <div style="font-size:11.5px;color:var(--text-secondary)">${this.state.currentUser.email} • Connected</div>
+                      </div>
+                    </div>
+                    <span style="font-size:12px;color:#38bdf8">Manage</span>
+                  </div>
+                </div>
+
+                <!-- Battery Saver -->
+                <div class="settings-card">
+                  <div class="settings-item" onclick="OS.toggleBatterySaver()">
+                    <div class="settings-left">
+                      <span>🍃</span>
+                      <div>
+                        <div style="font-weight:600">Battery Saver Mode</div>
+                        <div style="font-size:11px;color:var(--text-secondary)">Eco theme & animation throttle</div>
+                      </div>
+                    </div>
+                    <span>${this.state.batterySaver ? 'ON ✅' : 'OFF'}</span>
+                  </div>
+                  <div class="settings-item" onclick="OS.toggleMute()">
+                    <div class="settings-left">
+                      <span>🔔</span>
+                      <div>
+                        <div style="font-weight:600">Notification Sounds</div>
+                        <div style="font-size:11px;color:var(--text-secondary)">Master audio toggle</div>
+                      </div>
+                    </div>
+                    <span>${sound.muted ? 'Muted 🔕' : 'Active 🔊'}</span>
+                  </div>
+                </div>
+
+                <!-- Battery Insights & Health (D3.js Discharge Rate Chart) -->
+                <div class="battery-chart-container">
+                  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+                    <div>
+                      <div style="font-weight:700;font-size:14px;display:flex;align-items:center;gap:6px">
+                        <span>📊</span>
+                        <span>Battery Discharge Rate</span>
+                      </div>
+                      <div style="font-size:11px;color:var(--text-secondary)">D3.js Usage & Power Analytics</div>
+                    </div>
+                    <span style="font-size:11px;padding:3px 8px;border-radius:12px;background:rgba(56,189,248,0.15);color:#38bdf8;font-weight:600">Simulated 24H</span>
+                  </div>
+
+                  <div id="d3-battery-chart-wrapper" style="position:relative;width:100%;height:160px">
+                    <svg id="d3-battery-svg" style="width:100%;height:160px;overflow:visible"></svg>
+                    <div id="d3-chart-tooltip" class="d3-tooltip"></div>
+                  </div>
+
+                  <div class="battery-metrics-grid">
+                    <div class="battery-metric-box">
+                      <div class="battery-metric-val">18h 40m</div>
+                      <div class="battery-metric-label">Est. Remaining</div>
+                    </div>
+                    <div class="battery-metric-box">
+                      <div class="battery-metric-val">4h 12m</div>
+                      <div class="battery-metric-label">Screen Active</div>
+                    </div>
+                    <div class="battery-metric-box">
+                      <div class="battery-metric-val" style="color:#10b981">-3.1%/h</div>
+                      <div class="battery-metric-label">Discharge Rate</div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Wallpaper Selector -->
+                <div class="settings-card">
+                  <div style="padding:12px 16px 4px;font-weight:600;font-size:13px">System Wallpapers</div>
+                  <div style="display:grid;grid-template-columns:repeat(5, 1fr);gap:8px;padding:12px 16px">
+                    ${Object.keys(this.wallpapers).map(k => `
+                      <div style="height:60px;border-radius:10px;background:${this.wallpapers[k]};cursor:pointer;border:2px solid ${this.state.wallpaper === k ? '#fff' : 'transparent'}" onclick="OS.applyWallpaper('${k}'); OS.toast('Wallpaper Applied')"></div>
+                    `).join('')}
+                  </div>
+                </div>
+
+                <!-- Accent Color -->
+                <div class="settings-card">
+                  <div style="padding:12px 16px 4px;font-weight:600;font-size:13px">System Accent Color</div>
+                  <div style="display:flex;gap:10px;padding:12px 16px">
+                    ${['#007aff', '#00c6ff', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'].map(c => `
+                      <div style="width:30px;height:30px;border-radius:50%;background:${c};cursor:pointer;border:2px solid ${this.state.accent === c ? '#fff' : 'transparent'}" onclick="OS.applyAccent('${c}')"></div>
+                    `).join('')}
+                  </div>
+                </div>
+
+                <!-- Test Sound & Notif -->
+                <div class="settings-card">
+                  <div class="settings-item" onclick="OS.triggerMockNotification()">
+                    <div class="settings-left">
+                      <span>🧪</span>
+                      <div>
+                        <div style="font-weight:600">Test Notification & Sound</div>
+                        <div style="font-size:11px;color:var(--text-secondary)">Triggers audio chime and badge</div>
+                      </div>
+                    </div>
+                    <span>Trigger</span>
+                  </div>
+                </div>
+              </div>
+            `;
+
+          case 'calculator':
+            return `
+              <div class="calc-screen">
+                <div style="font-size:14px;color:var(--text-muted);text-align:right;padding-right:20px" id="calc-history"></div>
+                <div class="calc-display" id="calc-display">0</div>
+                <div class="calc-pad">
+                  <button class="calc-btn" style="color:#ef4444" onclick="OS.calcOp('C')">AC</button>
+                  <button class="calc-btn" onclick="OS.calcOp('sqrt')">√</button>
+                  <button class="calc-btn" onclick="OS.calcOp('sqr')">x²</button>
+                  <button class="calc-btn op" onclick="OS.calcOp('/')">÷</button>
+                  <button class="calc-btn" onclick="OS.calcNum('7')">7</button>
+                  <button class="calc-btn" onclick="OS.calcNum('8')">8</button>
+                  <button class="calc-btn" onclick="OS.calcNum('9')">9</button>
+                  <button class="calc-btn op" onclick="OS.calcOp('*')">×</button>
+                  <button class="calc-btn" onclick="OS.calcNum('4')">4</button>
+                  <button class="calc-btn" onclick="OS.calcNum('5')">5</button>
+                  <button class="calc-btn" onclick="OS.calcNum('6')">6</button>
+                  <button class="calc-btn op" onclick="OS.calcOp('-')">−</button>
+                  <button class="calc-btn" onclick="OS.calcNum('1')">1</button>
+                  <button class="calc-btn" onclick="OS.calcNum('2')">2</button>
+                  <button class="calc-btn" onclick="OS.calcNum('3')">3</button>
+                  <button class="calc-btn op" onclick="OS.calcOp('+')">+</button>
+                  <button class="calc-btn" style="grid-column:span 2" onclick="OS.calcNum('0')">0</button>
+                  <button class="calc-btn" onclick="OS.calcNum('.')">.</button>
+                  <button class="calc-btn op" onclick="OS.calcOp('=')">=</button>
+                </div>
+              </div>
+            `;
+
+          case 'browser':
+            return `
+              <div class="browser-root">
+                <div class="browser-toolbar">
+                  <button class="back-btn" style="width:28px;height:28px" onclick="OS.navigateBrowser('home')">🏠</button>
+                  <input type="text" id="browser-url-bar" class="browser-url-input" value="https://google.com" onkeydown="if(event.key==='Enter')OS.browserGo(this.value)">
+                  <button class="back-btn" style="width:28px;height:28px" onclick="OS.browserGo(document.getElementById('browser-url-bar').value)">🔍</button>
+                </div>
+                <div class="browser-content" id="browser-page-content">
+                  <div style="text-align:center;padding:24px 10px">
+                    <div style="font-size:32px;font-weight:700;margin-bottom:14px;letter-spacing:1px"><span style="color:#4285f4">G</span><span style="color:#ea4335">o</span><span style="color:#fbbc05">o</span><span style="color:#4285f4">g</span><span style="color:#34a853">l</span><span style="color:#ea4335">e</span></div>
+                    <div style="background:#1e293b;border-radius:24px;padding:8px 16px;display:flex;align-items:center;gap:10px;margin-bottom:20px;border:1px solid rgba(255,255,255,0.1)">
+                      <span>🔍</span>
+                      <input type="text" id="browser-search-box" placeholder="Search the web or type URL" style="flex:1;background:none;border:none;outline:none;color:#fff;font-size:13px" onkeydown="if(event.key==='Enter')OS.browserSearch(this.value)">
+                    </div>
+                    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:10px">
+                      <div class="app-item" onclick="OS.navigateBrowser('wiki')">
+                        <div class="app-icon" style="background:#374151;width:44px;height:44px;font-size:20px">📖</div>
+                        <span class="app-label">Wikipedia</span>
+                      </div>
+                      <div class="app-item" onclick="OS.navigateBrowser('news')">
+                        <div class="app-icon" style="background:#dc2626;width:44px;height:44px;font-size:20px">📰</div>
+                        <span class="app-label">TechNews</span>
+                      </div>
+                      <div class="app-item" onclick="OS.navigateBrowser('weather')">
+                        <div class="app-icon" style="background:#0284c7;width:44px;height:44px;font-size:20px">🌦️</div>
+                        <span class="app-label">Weather</span>
+                      </div>
+                      <div class="app-item" onclick="OS.navigateBrowser('github')">
+                        <div class="app-icon" style="background:#1e1e1e;width:44px;height:44px;font-size:20px">🐙</div>
+                        <span class="app-label">GitHub</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="browser-card">
+                    <div style="font-weight:700;font-size:14px;color:#38bdf8;margin-bottom:4px">Featured Article: AI & Future of OS</div>
+                    <div style="font-size:12px;color:var(--text-secondary);line-height:1.4">Modern mobile operating systems combine microkernels with hardware acceleration to achieve 120Hz responsiveness. Yaseen OS provides a pure web-standard simulation for low-end devices.</div>
+                  </div>
+                </div>
+              </div>
+            `;
+
+          case 'snake':
+            return `
+              <div style="display:flex;flex-direction:column;align-items:center;padding:12px;height:100%">
+                <div style="display:flex;justify-content:space-between;width:100%;max-width:300px;font-weight:700;margin-bottom:8px">
+                  <span>Score: <span id="snake-score" style="color:#10b981">0</span></span>
+                  <span>Best: <span id="snake-best" style="color:#f59e0b">0</span></span>
+                </div>
+                <canvas id="snake-canvas" width="280" height="280" style="background:#090d16;border:2px solid #1f2937;border-radius:12px"></canvas>
+                <div style="display:grid;grid-template-columns:repeat(3,52px);gap:6px;margin-top:14px">
+                  <div></div>
+                  <button class="calc-btn" style="height:48px" onclick="OS.changeSnakeDir(0, -1)">▲</button>
+                  <div></div>
+                  <button class="calc-btn" style="height:48px" onclick="OS.changeSnakeDir(-1, 0)">◀</button>
+                  <button class="calc-btn" style="height:48px;background:#10b981" onclick="OS.startSnakeGame()">🔄</button>
+                  <button class="calc-btn" style="height:48px" onclick="OS.changeSnakeDir(1, 0)">▶</button>
+                  <div></div>
+                  <button class="calc-btn" style="height:48px" onclick="OS.changeSnakeDir(0, 1)">▼</button>
+                  <div></div>
+                </div>
+              </div>
+            `;
+
+          case 'beats':
+            return `
+              <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 16px;height:100%;text-align:center">
+                <div style="width:120px;height:120px;border-radius:30px;background:var(--accent-gradient);display:flex;align-items:center;justify-content:center;font-size:52px;box-shadow:0 10px 30px rgba(0,122,255,0.4);margin-bottom:20px;animation:pulseGlow 2s infinite alternate">🎧</div>
+                <div style="font-size:20px;font-weight:700">MusicFlow Lo-Fi Synth</div>
+                <div style="font-size:12.5px;color:var(--text-secondary);margin:4px 0 20px">Procedural Relaxing Ambient Beats</div>
+                <canvas id="beats-visualizer" width="260" height="60" style="background:#131a2a;border-radius:12px;margin-bottom:20px"></canvas>
+                <button class="ps-install-btn" style="font-size:15px;padding:10px 36px;border-radius:24px" id="beats-toggle-btn" onclick="OS.toggleLoFiBeats()">▶ Play Synth</button>
+              </div>
+            `;
+
+          case 'crypto':
+            return `
+              <div style="padding:14px;height:100%;overflow-y:auto">
+                <div style="font-size:16px;font-weight:700;margin-bottom:12px">CryptoPulse Market</div>
+                <div class="settings-card" style="padding:14px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center">
+                  <div>
+                    <div style="font-weight:700;font-size:15px">Bitcoin (BTC)</div>
+                    <div style="font-size:11px;color:var(--text-muted)">Rank #1 • Market Cap $1.2T</div>
+                  </div>
+                  <div style="text-align:right">
+                    <div style="font-weight:700;font-size:15px" id="btc-price">$67,420</div>
+                    <div style="font-size:12px;color:#10b981">+4.2% 📈</div>
+                  </div>
+                </div>
+                <div class="settings-card" style="padding:14px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center">
+                  <div>
+                    <div style="font-weight:700;font-size:15px">Ethereum (ETH)</div>
+                    <div style="font-size:11px;color:var(--text-muted)">Rank #2 • Smart Contracts</div>
+                  </div>
+                  <div style="text-align:right">
+                    <div style="font-weight:700;font-size:15px" id="eth-price">$3,580</div>
+                    <div style="font-size:12px;color:#10b981">+2.8% 📈</div>
+                  </div>
+                </div>
+                <div class="settings-card" style="padding:14px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center">
+                  <div>
+                    <div style="font-weight:700;font-size:15px">Solana (SOL)</div>
+                    <div style="font-size:11px;color:var(--text-muted)">Rank #5 • High TPS</div>
+                  </div>
+                  <div style="text-align:right">
+                    <div style="font-weight:700;font-size:15px" id="sol-price">$164.50</div>
+                    <div style="font-size:12px;color:#ef4444">-0.9% 📉</div>
+                  </div>
+                </div>
+              </div>
+            `;
+
+          case 'flappy':
+            return `
+              <div style="display:flex;flex-direction:column;align-items:center;padding:16px;height:100%">
+                <div style="font-weight:600;margin-bottom:8px">Flappy Jet Mini</div>
+                <canvas id="flappy-canvas" width="300" height="380" style="background:#0f172a;border-radius:16px"></canvas>
+                <button class="store-install-btn" style="margin-top:14px" onclick="OS.jumpFlappy()">TAP TO JUMP 🚀</button>
+              </div>
+            `;
+
+          case 'sketch':
+            return `
+              <div style="display:flex;flex-direction:column;height:100%;padding:10px">
+                <canvas id="sketch-canvas" style="flex:1;background:#fff;border-radius:14px;touch-action:none"></canvas>
+                <div style="display:flex;justify-content:space-between;padding-top:10px">
+                  <button class="store-install-btn" onclick="OS.clearSketch()">Clear</button>
+                  <button class="store-install-btn" onclick="OS.saveSketchToGallery()">Save to Gallery</button>
+                </div>
+              </div>
+            `;
+
+          case 'notes':
+            return `
+              <div style="padding:14px;height:100%;display:flex;flex-direction:column">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+                  <div style="font-size:16px;font-weight:700">QuickNotes Pro</div>
+                  <button class="ps-install-btn" onclick="OS.newNote()">+ Note</button>
+                </div>
+                <div style="background:var(--surface-card);border-radius:18px;padding:8px 14px;display:flex;align-items:center;gap:8px;margin-bottom:12px;border:1px solid rgba(255,255,255,0.08)">
+                  <span>🔍</span>
+                  <input type="text" placeholder="Search notes..." style="flex:1;background:none;border:none;outline:none;color:#fff;font-size:12.5px" oninput="OS.filterNotes(this.value)">
+                </div>
+                <div style="flex:1;overflow-y:auto" id="notes-list-container">
+                  ${this.state.notes.map(n => `
+                    <div class="settings-card" style="padding:14px;margin-bottom:10px;cursor:pointer" onclick="OS.editNote(${n.id})">
+                      <div style="display:flex;justify-content:space-between">
+                        <div style="font-weight:700;font-size:14px;color:#38bdf8">${n.title}</div>
+                        <span style="font-size:10.5px;color:var(--text-muted)">${n.date}</span>
+                      </div>
+                      <div style="font-size:12px;color:var(--text-secondary);margin-top:6px;line-height:1.4">${n.content}</div>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+            `;
+
+          default:
+            return `<div style="padding:30px;text-align:center">App content for ${id}</div>`;
+        }
+      },
+
+      initAppCode(id) {
+        if (id === 'camera') {
+          const cvs = document.getElementById('camera-canvas');
+          if (!cvs) return;
+          const ctx = cvs.getContext('2d');
+          cvs.width = 360;
+          cvs.height = 540;
+          let t = 0;
+          this._camTimer = setInterval(() => {
+            t += 0.05;
+            ctx.fillStyle = '#1e293b';
+            ctx.fillRect(0, 0, cvs.width, cvs.height);
+            ctx.fillStyle = '#059669';
+            ctx.beginPath();
+            ctx.arc(180 + Math.sin(t) * 15, 380, 140, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 1.5;
+            ctx.strokeRect(180 - 25, 270 - 25, 50, 50);
+          }, 60);
+        } else if (id === 'flappy') {
+          this.initFlappyGame();
+        } else if (id === 'sketch') {
+          this.initSketchPad();
+        } else if (id === 'snake') {
+          this.initSnakeGame();
+        } else if (id === 'beats') {
+          this.initLoFiVisualizer();
+        } else if (id === 'crypto') {
+          this.initCryptoPulse();
+        } else if (id === 'settings') {
+          setTimeout(() => this.renderD3BatteryChart(), 60);
+        }
+      },
+
+      // D3.js Battery Discharge Rate Chart Visualization
+      renderD3BatteryChart() {
+        const wrapper = document.getElementById('d3-battery-chart-wrapper');
+        const svgEl = document.getElementById('d3-battery-svg');
+        if (!wrapper || !svgEl) return;
+
+        const data = [
+          { time: '06:00', level: 100, label: 'Unplugged' },
+          { time: '09:00', level: 93, label: 'Navigation & Sync' },
+          { time: '12:00', level: 86, label: 'Web & Video' },
+          { time: '15:00', level: 79, label: 'Messaging & Calls' },
+          { time: '18:00', level: 72, label: 'Gaming 60FPS' },
+          { time: '21:00', level: 66, label: 'Eco Power Mode' },
+          { time: 'Now', level: 63, label: 'Active Status' }
+        ];
+
+        const w = wrapper.clientWidth || 300;
+        const h = 160;
+        const m = { top: 18, right: 14, bottom: 26, left: 36 };
+        const innerW = w - m.left - m.right;
+        const innerH = h - m.top - m.bottom;
+
+        if (window.d3) {
+          const d3 = window.d3;
+          d3.select('#d3-battery-svg').selectAll('*').remove();
+
+          const svg = d3.select('#d3-battery-svg')
+            .attr('viewBox', `0 0 ${w} ${h}`)
+            .append('g')
+            .attr('transform', `translate(${m.left},${m.top})`);
+
+          // Gradient fill definition
+          const defs = svg.append('defs');
+          const grad = defs.append('linearGradient')
+            .attr('id', 'd3-bat-grad')
+            .attr('x1', '0%').attr('y1', '0%')
+            .attr('x2', '0%').attr('y2', '100%');
+          grad.append('stop').attr('offset', '0%').attr('stop-color', '#38bdf8').attr('stop-opacity', 0.45);
+          grad.append('stop').attr('offset', '100%').attr('stop-color', '#0284c7').attr('stop-opacity', 0.0);
+
+          // Scales
+          const x = d3.scalePoint()
+            .domain(data.map(d => d.time))
+            .range([0, innerW]);
+
+          const y = d3.scaleLinear()
+            .domain([50, 100])
+            .range([innerH, 0]);
+
+          // Gridlines
+          svg.append('g')
+            .call(d3.axisLeft(y).ticks(3).tickSize(-innerW).tickFormat(''))
+            .selectAll('line')
+            .attr('stroke', 'rgba(255, 255, 255, 0.06)');
+
+          // Area
+          const area = d3.area()
+            .x(d => x(d.time))
+            .y0(innerH)
+            .y1(d => y(d.level))
+            .curve(d3.curveMonotoneX);
+
+          svg.append('path')
+            .datum(data)
+            .attr('fill', 'url(#d3-bat-grad)')
+            .attr('d', area);
+
+          // Line
+          const line = d3.line()
+            .x(d => x(d.time))
+            .y(d => y(d.level))
+            .curve(d3.curveMonotoneX);
+
+          svg.append('path')
+            .datum(data)
+            .attr('fill', 'none')
+            .attr('stroke', '#38bdf8')
+            .attr('stroke-width', 2.5)
+            .attr('d', line);
+
+          // Circles with tooltip interaction
+          const tooltip = document.getElementById('d3-chart-tooltip');
+          svg.selectAll('.dot')
+            .data(data)
+            .enter()
+            .append('circle')
+            .attr('cx', d => x(d.time))
+            .attr('cy', d => y(d.level))
+            .attr('r', 3.5)
+            .attr('fill', '#ffffff')
+            .attr('stroke', '#0284c7')
+            .attr('stroke-width', 2)
+            .style('cursor', 'pointer')
+            .on('pointerdown pointerenter', (evt, d) => {
+              if (tooltip) {
+                tooltip.style.display = 'block';
+                tooltip.style.left = `${Math.min(x(d.time) + m.left - 20, w - 120)}px`;
+                tooltip.style.top = `${y(d.level) + m.top - 32}px`;
+                tooltip.innerHTML = `<b>${d.time} • ${d.level}%</b><br><span style="color:#94a3b8">${d.label}</span>`;
+              }
+            });
+
+          // X and Y Axes
+          svg.append('g')
+            .attr('transform', `translate(0,${innerH})`)
+            .call(d3.axisBottom(x).tickValues(['06:00', '12:00', '18:00', 'Now']))
+            .selectAll('text')
+            .attr('fill', '#94a3b8')
+            .attr('font-size', '10px');
+
+          svg.append('g')
+            .call(d3.axisLeft(y).ticks(3).tickFormat(v => `${v}%`))
+            .selectAll('text')
+            .attr('fill', '#94a3b8')
+            .attr('font-size', '10px');
+
+        } else {
+          // Native SVG Math Fallback (Zero network failure risk)
+          this.renderSvgFallbackBatteryChart(svgEl, data, w, h, m, innerW, innerH);
+        }
+      },
+
+      renderSvgFallbackBatteryChart(svgEl, data, w, h, m, innerW, innerH) {
+        const stepX = innerW / (data.length - 1);
+        const getY = (val) => innerH - ((val - 50) / 50) * innerH;
+
+        let pathD = `M ${m.left} ${m.top + getY(data[0].level)}`;
+        let areaD = `M ${m.left} ${m.top + innerH} L ${m.left} ${m.top + getY(data[0].level)}`;
+
+        data.forEach((d, i) => {
+          const px = m.left + i * stepX;
+          const py = m.top + getY(d.level);
+          if (i > 0) {
+            pathD += ` L ${px} ${py}`;
+            areaD += ` L ${px} ${py}`;
+          }
+        });
+        areaD += ` L ${m.left + innerW} ${m.top + innerH} Z`;
+
+        svgEl.setAttribute('viewBox', `0 0 ${w} ${h}`);
+        svgEl.innerHTML = `
+          <defs>
+            <linearGradient id="fallback-grad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.4" />
+              <stop offset="100%" stop-color="#0284c7" stop-opacity="0.0" />
+            </linearGradient>
+          </defs>
+          <line x1="${m.left}" y1="${m.top + innerH/2}" x2="${m.left + innerW}" y2="${m.top + innerH/2}" stroke="rgba(255,255,255,0.06)" />
+          <path d="${areaD}" fill="url(#fallback-grad)" />
+          <path d="${pathD}" fill="none" stroke="#38bdf8" stroke-width="2.5" />
+          ${data.map((d, i) => `
+            <circle cx="${m.left + i * stepX}" cy="${m.top + getY(d.level)}" r="3.5" fill="#fff" stroke="#0284c7" stroke-width="2" />
+            <text x="${m.left + i * stepX}" y="${m.top + innerH + 16}" fill="#94a3b8" font-size="10" text-anchor="middle">${d.time}</text>
+          `).join('')}
+          <text x="${m.left - 6}" y="${m.top + getY(100) + 4}" fill="#94a3b8" font-size="10" text-anchor="end">100%</text>
+          <text x="${m.left - 6}" y="${m.top + getY(50) + 4}" fill="#94a3b8" font-size="10" text-anchor="end">50%</text>
+        `;
+      },
+
+      setPlayStoreTab(tab) {
+        this._playStoreTab = tab;
+        sound.playTone(600, 0.03);
+        const content = document.getElementById('app-content-body');
+        if (content) content.innerHTML = this.getAppHtml('store');
+      },
+
+      filterPlayStore(q) {
+        const container = document.getElementById('ps-apps-container');
+        if (!container) return;
+        const query = (q || '').toLowerCase().trim();
+        const tab = this._playStoreTab || 'For you';
+        const filtered = this.storeCatalog.filter(a => {
+          const matchTab = tab === 'Games' ? a.category === 'Games' : tab === 'Apps' ? a.category === 'Apps' : true;
+          return matchTab && (!query || a.name.toLowerCase().includes(query) || a.desc.toLowerCase().includes(query));
+        });
+
+        container.innerHTML = filtered.map(app => {
+          const isInstalled = this.state.installedStoreApps.includes(app.id);
+          return `
+            <div class="ps-app-card" onclick="OS.showAppDetails('${app.id}')">
+              <div class="ps-app-icon" style="background:${app.color}">${app.icon}</div>
+              <div class="ps-app-info">
+                <div class="ps-app-name">${app.name}</div>
+                <div class="ps-app-dev">${app.dev}</div>
+                <div class="ps-app-meta"><span>${app.rating}</span> • <span>${app.size}</span> • <span>${app.downloads}</span></div>
+                <div class="ps-progress-bar" id="pbar-${app.id}"><div class="ps-progress-fill" id="pfill-${app.id}"></div></div>
+              </div>
+              <div onclick="event.stopPropagation()">
+                <button class="ps-install-btn ${isInstalled ? 'installed' : ''}" id="pbtn-${app.id}" onclick="OS.handleStoreAction('${app.id}')">
+                  ${isInstalled ? 'Open' : 'Install'}
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      },
+
+      handleStoreAction(id) {
+        if (this.state.installedStoreApps.includes(id)) {
+          this.openApp(id);
+        } else {
+          this.installAppWithProgress(id);
+        }
+      },
+
+      installAppWithProgress(id) {
+        const app = this.storeCatalog.find(a => a.id === id);
+        if (!app) return;
+        const btn = document.getElementById(`pbtn-${id}`);
+        const pbar = document.getElementById(`pbar-${id}`);
+        const pfill = document.getElementById(`pfill-${id}`);
+
+        if (btn) { btn.innerText = 'Pending...'; btn.classList.add('installing'); }
+        if (pbar) pbar.style.display = 'block';
+
+        let progress = 0;
+        const interval = setInterval(() => {
+          progress += Math.floor(Math.random() * 25) + 18;
+          if (pfill) pfill.style.width = `${Math.min(progress, 100)}%`;
+          if (btn && progress > 25) btn.innerText = `${Math.min(progress, 99)}%`;
+
+          if (progress >= 100) {
+            clearInterval(interval);
+            if (!this.state.installedStoreApps.includes(id)) {
+              this.state.installedStoreApps.push(id);
+              localStorage.setItem('yaseen_installed_apps', JSON.stringify(this.state.installedStoreApps));
+            }
+            this.renderAllAppLists();
+            sound.playNotificationChime();
+            this.vibrate(35);
+
+            this.state.notifications.unshift({
+              id: 'n_' + Date.now(),
+              app: 'Google Play Store',
+              title: `${app.name} Installed`,
+              desc: 'Ready to launch from home screen.',
+              time: 'Just now',
+              appId: id
+            });
+            this.renderNotifications();
+
+            if (btn) {
+              btn.innerText = 'Open';
+              btn.classList.remove('installing');
+              btn.classList.add('installed');
+            }
+            if (pbar) pbar.style.display = 'none';
+            this.toast(`Installed ${app.name}`);
+          }
+        }, 200);
+      },
+
+      showAppDetails(id) {
+        const app = this.storeCatalog.find(a => a.id === id);
+        if (!app) return;
+        const isInstalled = this.state.installedStoreApps.includes(id);
+        const modal = document.createElement('div');
+        modal.id = 'ps-detail-modal';
+        modal.className = 'photo-modal open';
+        modal.innerHTML = `
+          <div class="system-app-header">
+            <button class="back-btn" onclick="document.getElementById('ps-detail-modal').remove()">←</button>
+            <div style="font-weight:600">App Details</div>
+          </div>
+          <div style="padding:16px;flex:1;overflow-y:auto">
+            <div style="display:flex;gap:16px;align-items:center;margin-bottom:16px">
+              <div class="ps-app-icon" style="background:${app.color};width:68px;height:68px;font-size:32px">${app.icon}</div>
+              <div>
+                <div style="font-size:18px;font-weight:700">${app.name}</div>
+                <div style="font-size:12.5px;color:#34d399">${app.dev} ✓</div>
+                <div style="font-size:11.5px;color:var(--text-muted)">Verified by Play Protect</div>
+              </div>
+            </div>
+            <div style="display:flex;justify-content:space-around;padding:12px 0;border-top:1px solid rgba(255,255,255,0.08);border-bottom:1px solid rgba(255,255,255,0.08);margin-bottom:18px;text-align:center">
+              <div><div style="font-weight:700;font-size:14px">${app.rating}</div><div style="font-size:10px;color:var(--text-muted)">Reviews</div></div>
+              <div><div style="font-weight:700;font-size:14px">${app.size}</div><div style="font-size:10px;color:var(--text-muted)">Size</div></div>
+              <div><div style="font-weight:700;font-size:14px">${app.downloads}</div><div style="font-size:10px;color:var(--text-muted)">Downloads</div></div>
+            </div>
+            <button class="ps-install-btn" style="width:100%;padding:12px;font-size:14px;border-radius:24px;margin-bottom:16px" onclick="OS.installAppWithProgress('${app.id}'); document.getElementById('ps-detail-modal').remove()">
+              ${isInstalled ? 'Open Application' : 'Install Free'}
+            </button>
+            <div style="font-weight:700;margin-bottom:6px">About this app</div>
+            <div style="font-size:12.5px;color:var(--text-secondary);line-height:1.5;margin-bottom:16px">${app.desc}. Fully certified for Yaseen OS with zero lag and high-speed execution.</div>
+          </div>
+        `;
+        document.body.appendChild(modal);
+      },
+
+      navigateBrowser(dest) {
+        sound.playTone(650, 0.03);
+        const urlBar = document.getElementById('browser-url-bar');
+        const content = document.getElementById('browser-page-content');
+        if (!content) return;
+        if (dest === 'home') {
+          if (urlBar) urlBar.value = 'https://google.com';
+          this.openApp('browser');
+        } else if (dest === 'wiki') {
+          if (urlBar) urlBar.value = 'https://en.wikipedia.org/wiki/Mobile_OS';
+          content.innerHTML = `<div class="browser-card"><div style="font-size:16px;font-weight:700;margin-bottom:6px">📖 Wikipedia: Mobile OS</div><div style="font-size:12px;color:var(--text-secondary);line-height:1.5">Mobile operating systems enable phones and tablets to execute apps. Yaseen OS provides a modern fluid web runtime with native performance.</div></div>`;
+        } else if (dest === 'news') {
+          if (urlBar) urlBar.value = 'https://technews.io/mobile';
+          content.innerHTML = `<div class="browser-card"><div style="font-size:16px;font-weight:700;color:#ef4444;margin-bottom:6px">📰 TechNews Breaking</div><div style="font-weight:600;font-size:13px;margin-bottom:4px">Google Play Store Integrated in Yaseen OS</div><div style="font-size:12px;color:var(--text-secondary)">Users can now discover and run live apps on desktop with zero frame drops.</div></div>`;
+        } else if (dest === 'weather') {
+          if (urlBar) urlBar.value = 'https://weather.global/live';
+          content.innerHTML = `<div class="browser-card"><div style="font-size:16px;font-weight:700;color:#0284c7;margin-bottom:6px">🌦️ Weather Radar</div><div style="font-size:13px;margin-bottom:4px">Yaseen City: 24°C Sunny • Humidity 45%</div><div style="font-size:12px;color:var(--text-secondary)">Mild breeze and clear skies throughout the week.</div></div>`;
+        } else if (dest === 'github') {
+          if (urlBar) urlBar.value = 'https://github.com/yaseen-os';
+          content.innerHTML = `<div class="browser-card"><div style="font-size:16px;font-weight:700;margin-bottom:6px">🐙 GitHub Repository</div><div style="font-size:13px;color:#10b981">yaseen-os / core-launcher-web</div><div style="font-size:12px;color:var(--text-secondary);margin-top:4px">100% Lightweight Vanilla JavaScript Engine.</div></div>`;
+        }
+      },
+
+      browserGo(query) {
+        if (!query) return;
+        sound.playTone(600, 0.04);
+        const lower = query.toLowerCase().trim();
+        if (lower.includes('tiktok')) {
+          this.toast('Launching Sandboxed TikTok Lite');
+          this.openApp('tiktok');
+          return;
+        }
+        this.browserSearch(query);
+      },
+
+      browserSearch(query) {
+        const content = document.getElementById('browser-page-content');
+        const urlBar = document.getElementById('browser-url-bar');
+        if (urlBar) urlBar.value = `https://google.com/search?q=${encodeURIComponent(query)}`;
+        if (content) {
+          content.innerHTML = `
+            <div style="font-size:13px;color:var(--text-muted);margin-bottom:12px">Search results for: <b>${query}</b></div>
+            <div class="browser-card"><div style="font-size:14px;font-weight:700;color:#38bdf8">${query} - Official Portal</div><div style="font-size:12px;color:var(--text-secondary);margin-top:4px">Discover fast, modern apps and documentation on ${query} for Yaseen OS.</div></div>
+          `;
+        }
+      },
+
+      // Safe Sandboxed TikTok Lite Controller
+      toggleTikTokLike(btn) {
+        sound.playTone(850, 0.04);
+        this.vibrate(20);
+        btn.classList.toggle('liked');
+        const icon = btn.querySelector('span:first-child');
+        if (btn.classList.contains('liked')) {
+          icon.style.color = '#ef4444';
+          this.toast('Liked Video ❤️');
+        } else {
+          icon.style.color = '#ffffff';
+        }
+      },
+
+      handleTikTokLike(card, event) {
+        sound.playTone(900, 0.05);
+        this.vibrate(25);
+        const heart = document.createElement('div');
+        heart.className = 'heart-pop';
+        heart.innerText = '❤️';
+        heart.style.left = `${event.offsetX - 30}px`;
+        heart.style.top = `${event.offsetY - 30}px`;
+        card.appendChild(heart);
+        setTimeout(() => heart.remove(), 700);
+
+        const likeBtn = card.querySelector('.tiktok-action-btn');
+        if (likeBtn && !likeBtn.classList.contains('liked')) {
+          this.toggleTikTokLike(likeBtn);
+        }
+      },
+
+      openTikTokComments() {
+        sound.playTone(550, 0.03);
+        this.toast('Comments: "Ultra smooth 60FPS on Yaseen OS! 🔥"');
+      },
+
+      initSnakeGame() {
+        const cvs = document.getElementById('snake-canvas');
+        if (!cvs) return;
+        const ctx = cvs.getContext('2d');
+        let snake = [{x: 5, y: 5}, {x: 4, y: 5}];
+        let food = {x: 8, y: 8};
+        let dir = {x: 1, y: 0};
+        let score = 0;
+        let best = parseInt(localStorage.getItem('snake_best') || '0', 10);
+        const bEl = document.getElementById('snake-best');
+        if (bEl) bEl.innerText = best;
+
+        this.changeSnakeDir = (dx, dy) => {
+          if (dx !== -dir.x || dy !== -dir.y) { dir = {x: dx, y: dy}; sound.playTone(400, 0.02); }
+        };
+        this.startSnakeGame = () => {
+          snake = [{x: 5, y: 5}, {x: 4, y: 5}];
+          dir = {x: 1, y: 0};
+          score = 0;
+          const sEl = document.getElementById('snake-score');
+          if (sEl) sEl.innerText = '0';
+        };
+
+        if (this._snakeTimer) clearInterval(this._snakeTimer);
+        this._snakeTimer = setInterval(() => {
+          const head = {x: snake[0].x + dir.x, y: snake[0].y + dir.y};
+          if (head.x < 0) head.x = 13; if (head.x > 13) head.x = 0;
+          if (head.y < 0) head.y = 13; if (head.y > 13) head.y = 0;
+          snake.unshift(head);
+          if (head.x === food.x && head.y === food.y) {
+            score += 10;
+            sound.playTone(880, 0.05);
+            const sEl = document.getElementById('snake-score');
+            if (sEl) sEl.innerText = score;
+            if (score > best) {
+              best = score;
+              localStorage.setItem('snake_best', best);
+              if (bEl) bEl.innerText = best;
+            }
+            food = {x: Math.floor(Math.random() * 14), y: Math.floor(Math.random() * 14)};
+          } else {
+            snake.pop();
+          }
+          ctx.fillStyle = '#090d16'; ctx.fillRect(0, 0, 280, 280);
+          ctx.fillStyle = '#ef4444'; ctx.beginPath(); ctx.arc(food.x * 20 + 10, food.y * 20 + 10, 7, 0, Math.PI * 2); ctx.fill();
+          snake.forEach((s, idx) => { ctx.fillStyle = idx === 0 ? '#34d399' : '#059669'; ctx.fillRect(s.x * 20 + 2, s.y * 20 + 2, 16, 16); });
+        }, 130);
+      },
+
+      initLoFiVisualizer() {
+        const cvs = document.getElementById('beats-visualizer');
+        if (!cvs) return;
+        const ctx = cvs.getContext('2d');
+        const draw = () => {
+          ctx.fillStyle = '#131a2a'; ctx.fillRect(0, 0, 260, 60);
+          for (let i = 0; i < 16; i++) {
+            const h = this._isPlayingLoFi ? (Math.sin(Date.now() * 0.005 + i) * 0.5 + 0.5) * 45 + 5 : 6;
+            ctx.fillStyle = '#007aff'; ctx.fillRect(i * 16 + 4, 55 - h, 10, h);
+          }
+          this._visLoop = requestAnimationFrame(draw);
+        };
+        draw();
+      },
+
+      toggleLoFiBeats() {
+        this._isPlayingLoFi = !this._isPlayingLoFi;
+        const btn = document.getElementById('beats-toggle-btn');
+        if (this._isPlayingLoFi) {
+          if (btn) btn.innerText = '⏸ Pause Synth';
+          sound.playTone(330, 0.4);
+          this._lofiInterval = setInterval(() => {
+            const notes = [261.63, 329.63, 392.00, 523.25, 587.33];
+            sound.playTone(notes[Math.floor(Math.random() * notes.length)], 0.35);
+          }, 800);
+        } else {
+          if (btn) btn.innerText = '▶ Play Synth';
+          if (this._lofiInterval) clearInterval(this._lofiInterval);
+        }
+      },
+
+      initCryptoPulse() {
+        if (this._cryptoInterval) clearInterval(this._cryptoInterval);
+        this._cryptoInterval = setInterval(() => {
+          const btc = document.getElementById('btc-price');
+          const eth = document.getElementById('eth-price');
+          const sol = document.getElementById('sol-price');
+          if (btc) btc.innerText = '$' + (67000 + Math.floor(Math.random() * 800)).toLocaleString();
+          if (eth) eth.innerText = '$' + (3550 + Math.floor(Math.random() * 60)).toLocaleString();
+          if (sol) sol.innerText = '$' + (163 + (Math.random() * 3)).toFixed(2);
+        }, 1500);
+      },
+
+      // Gallery Logic
+      addMockPhoto() {
+        sound.playTone(700, 0.05);
+        const cvs = document.createElement('canvas');
+        cvs.width = 300;
+        cvs.height = 300;
+        const ctx = cvs.getContext('2d');
+        const grad = ctx.createLinearGradient(0, 0, 300, 300);
+        grad.addColorStop(0, '#00c6ff');
+        grad.addColorStop(1, '#0072ff');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, 300, 300);
+        ctx.fillStyle = '#fff';
+        ctx.font = '24px sans-serif';
+        ctx.fillText('Yaseen OS Snapshot', 35, 150);
+
+        const dataUrl = cvs.toDataURL('image/jpeg', 0.85);
+        this.state.capturedPhotos.unshift({ id: Date.now(), data: dataUrl });
+        localStorage.setItem('yaseen_gallery', JSON.stringify(this.state.capturedPhotos));
+        this.openApp('gallery');
+        this.toast('Mock photo added');
+      },
+
+      captureSnapshot() {
+        sound.playShutter();
+        this.vibrate(40);
+        const flash = document.getElementById('camera-flash');
+        if (flash) {
+          flash.style.opacity = '1';
+          setTimeout(() => flash.style.opacity = '0', 100);
+        }
+        const cvs = document.getElementById('camera-canvas');
+        if (cvs) {
+          const url = cvs.toDataURL('image/jpeg', 0.85);
+          this.state.capturedPhotos.unshift({ id: Date.now(), data: url });
+          localStorage.setItem('yaseen_gallery', JSON.stringify(this.state.capturedPhotos));
+          this.toast('Snapshot saved to Gallery');
+        }
+      },
+
+      viewPhoto(idx) {
+        this._activePhotoIdx = idx;
+        const p = this.state.capturedPhotos[idx];
+        const modal = document.getElementById('photo-modal');
+        const img = document.getElementById('photo-viewer-img');
+        if (modal) modal.classList.add('open');
+        if (img) img.style.backgroundImage = `url('${p.data}')`;
+      },
+
+      closePhotoModal() {
+        document.getElementById('photo-modal')?.classList.remove('open');
+      },
+
+      setPhotoWallpaper() {
+        const p = this.state.capturedPhotos[this._activePhotoIdx];
+        if (p) {
+          this.applyWallpaper(p.data);
+          this.toast('Applied as Wallpaper');
+          this.closePhotoModal();
+        }
+      },
+
+      deletePhoto() {
+        if (this._activePhotoIdx !== undefined) {
+          this.state.capturedPhotos.splice(this._activePhotoIdx, 1);
+          localStorage.setItem('yaseen_gallery', JSON.stringify(this.state.capturedPhotos));
+          this.closePhotoModal();
+          this.openApp('gallery');
+          this.toast('Photo deleted');
+        }
+      },
+
+      // Calculator logic
+      calcNum(digit) {
+        sound.playTone(450, 0.03);
+        if (!this._calc) this._calc = { cur: '0', op: null, prev: null };
+        if (this._calc.cur === '0' && digit !== '.') this._calc.cur = digit;
+        else this._calc.cur += digit;
+        document.getElementById('calc-display').innerText = this._calc.cur;
+      },
+
+      calcOp(op) {
+        sound.playTone(500, 0.04);
+        if (!this._calc) this._calc = { cur: '0', op: null, prev: null };
+        if (op === 'C') {
+          this._calc = { cur: '0', op: null, prev: null };
+        } else if (op === '=') {
+          if (this._calc.op && this._calc.prev !== null) {
+            const a = parseFloat(this._calc.prev);
+            const b = parseFloat(this._calc.cur);
+            let ans = 0;
+            if (this._calc.op === '+') ans = a + b;
+            if (this._calc.op === '-') ans = a - b;
+            if (this._calc.op === '*') ans = a * b;
+            if (this._calc.op === '/') ans = b !== 0 ? a / b : 'Err';
+            this._calc.cur = String(ans);
+            this._calc.op = null;
+            this._calc.prev = null;
+          }
+        } else {
+          this._calc.prev = this._calc.cur;
+          this._calc.op = op;
+          this._calc.cur = '0';
+        }
+        document.getElementById('calc-display').innerText = this._calc.cur;
+      },
+
+      // Flappy Game Mini
+      initFlappyGame() {
+        const cvs = document.getElementById('flappy-canvas');
+        if (!cvs) return;
+        const ctx = cvs.getContext('2d');
+        let py = 150, vy = 0;
+        this._jumpFlappy = () => { vy = -5.5; sound.playTone(800, 0.05); };
+        const loop = () => {
+          vy += 0.28;
+          py += vy;
+          if (py > 350) py = 350;
+          if (py < 10) py = 10;
+
+          ctx.fillStyle = '#0f172a';
+          ctx.fillRect(0, 0, cvs.width, cvs.height);
+
+          ctx.fillStyle = '#00c6ff';
+          ctx.beginPath();
+          ctx.arc(80, py, 14, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.fillStyle = '#fff';
+          ctx.fillText('Tap jump button below', 80, 50);
+
+          this._gameLoop = requestAnimationFrame(loop);
+        };
+        loop();
+      },
+      jumpFlappy() {
+        if (this._jumpFlappy) this._jumpFlappy();
+      },
+
+      // Sketchpad
+      initSketchPad() {
+        const cvs = document.getElementById('sketch-canvas');
+        if (!cvs) return;
+        const ctx = cvs.getContext('2d');
+        cvs.width = cvs.clientWidth || 300;
+        cvs.height = cvs.clientHeight || 350;
+        let drawing = false;
+
+        cvs.addEventListener('pointerdown', (e) => {
+          drawing = true;
+          ctx.beginPath();
+          ctx.moveTo(e.offsetX, e.offsetY);
+        });
+        cvs.addEventListener('pointermove', (e) => {
+          if (!drawing) return;
+          ctx.lineTo(e.offsetX, e.offsetY);
+          ctx.strokeStyle = '#007aff';
+          ctx.lineWidth = 3;
+          ctx.stroke();
+        });
+        window.addEventListener('pointerup', () => drawing = false);
+      },
+      clearSketch() {
+        const cvs = document.getElementById('sketch-canvas');
+        if (cvs) cvs.getContext('2d').clearRect(0, 0, cvs.width, cvs.height);
+      },
+      saveSketchToGallery() {
+        const cvs = document.getElementById('sketch-canvas');
+        if (cvs) {
+          const url = cvs.toDataURL('image/jpeg', 0.85);
+          this.state.capturedPhotos.unshift({ id: Date.now(), data: url });
+          localStorage.setItem('yaseen_gallery', JSON.stringify(this.state.capturedPhotos));
+          this.toast('Sketch saved to Gallery');
+        }
+      },
+
+      newNote() {
+        const title = prompt('Note title:');
+        if (!title) return;
+        const content = prompt('Note content:') || '';
+        this.state.notes.unshift({ id: Date.now(), title, content });
+        localStorage.setItem('yaseen_notes', JSON.stringify(this.state.notes));
+        this.openApp('notes');
+        this.toast('Note added');
+      },
+
+      // Seamless Mock Authentication Controller
+      openAuthModal() {
+        sound.playTone(600, 0.04);
+        this.vibrate(15);
+        document.getElementById('auth-modal')?.classList.add('open');
+      },
+
+      closeAuthModal() {
+        this.vibrate(10);
+        document.getElementById('auth-modal')?.classList.remove('open');
+      },
+
+      switchAuthTab(tab) {
+        sound.playTone(500, 0.03);
+        const signinTab = document.getElementById('auth-tab-signin');
+        const signupTab = document.getElementById('auth-tab-signup');
+        const nameGroup = document.getElementById('auth-name-group');
+        const submitBtn = document.getElementById('auth-submit-btn');
+        const modalTitle = document.getElementById('auth-modal-title');
+
+        if (tab === 'signup') {
+          signinTab?.classList.remove('active');
+          signupTab?.classList.add('active');
+          if (nameGroup) nameGroup.style.display = 'block';
+          if (submitBtn) submitBtn.innerText = 'Create Account (Instant)';
+          if (modalTitle) modalTitle.innerText = 'Create Yaseen Account';
+        } else {
+          signupTab?.classList.remove('active');
+          signinTab?.classList.add('active');
+          if (nameGroup) nameGroup.style.display = 'none';
+          if (submitBtn) submitBtn.innerText = 'Sign In Seamlessly';
+          if (modalTitle) modalTitle.innerText = 'Sign In to Yaseen OS';
+        }
+      },
+
+      submitMockAuth() {
+        const email = document.getElementById('auth-input-email')?.value || 'yasse677n@gmail.com';
+        const name = document.getElementById('auth-input-name')?.value || email.split('@')[0] || 'User';
+        this.executeMockAuthSuccess(name, email);
+      },
+
+      mockGoogleSignIn() {
+        this.executeMockAuthSuccess('Yaseen', 'yasse677n@gmail.com');
+      },
+
+      executeMockAuthSuccess(name, email) {
+        sound.playTone(880, 0.08);
+        this.vibrate(30);
+        this.state.currentUser = {
+          isLoggedIn: true,
+          name: name,
+          email: email,
+          avatarText: (name[0] || 'Y').toUpperCase()
+        };
+        localStorage.setItem('yaseen_user', JSON.stringify(this.state.currentUser));
+        this.closeAuthModal();
+        this.toast(`Signed in as ${email}`);
+
+        // Refresh view if store or settings is active
+        if (this.state.activeApp === 'store') {
+          this.openApp('store');
+        } else if (this.state.activeApp === 'settings') {
+          this.openApp('settings');
+        }
+      },
+
+      mockSignOut() {
+        this.vibrate(20);
+        this.state.currentUser = {
+          isLoggedIn: false,
+          name: 'Guest',
+          email: 'guest@yaseenos.local',
+          avatarText: 'G'
+        };
+        localStorage.setItem('yaseen_user', JSON.stringify(this.state.currentUser));
+        this.closeAuthModal();
+        this.toast('Signed out');
+        if (this.state.activeApp === 'store') this.openApp('store');
+        else if (this.state.activeApp === 'settings') this.openApp('settings');
+      },
+
+      bindGestures() {
+        let sy = 0, sx = 0, isMouseDown = false;
+
+        // Touch gesture tracking
+        document.addEventListener('touchstart', e => {
+          sy = e.touches[0].clientY;
+          sx = e.touches[0].clientX;
+        }, { passive: true });
+
+        document.addEventListener('touchend', e => {
+          const dy = e.changedTouches[0].clientY - sy;
+          const dx = e.changedTouches[0].clientX - sx;
+          this.processGesture(dy, dx, sy);
+        }, { passive: true });
+
+        // Pointer/Mouse drag tracking (for emulator mouse input)
+        document.addEventListener('mousedown', e => {
+          isMouseDown = true;
+          sy = e.clientY;
+          sx = e.clientX;
+        });
+
+        document.addEventListener('mouseup', e => {
+          if (!isMouseDown) return;
+          isMouseDown = false;
+          const dy = e.clientY - sy;
+          const dx = e.clientX - sx;
+          this.processGesture(dy, dx, sy);
+        });
+
+        // Lock screen drag to unlock
+        const lockEl = document.getElementById('boot-lock-screen');
+        if (lockEl) {
+          let lsy = 0, ldown = false;
+          lockEl.addEventListener('touchstart', e => { lsy = e.touches[0].clientY; }, { passive: true });
+          lockEl.addEventListener('touchend', e => {
+            if (lsy - e.changedTouches[0].clientY > 45) unlockSystem();
+          }, { passive: true });
+          lockEl.addEventListener('mousedown', e => { ldown = true; lsy = e.clientY; });
+          lockEl.addEventListener('mouseup', e => {
+            if (ldown && (lsy - e.clientY > 45)) unlockSystem();
+            ldown = false;
+          });
+        }
+      },
+
+      processGesture(dy, dx, sy) {
+        // Swipe down from top status bar area -> Drop down Quick Settings
+        if (dy > 45 && Math.abs(dy) > Math.abs(dx) && sy < 140 && !this.state.activeApp) {
+          this.openShade();
+        }
+        // Swipe up from bottom dock area -> Open App Drawer
+        else if (dy < -45 && Math.abs(dy) > Math.abs(dx) && sy > window.innerHeight - 150 && !this.state.activeApp) {
+          this.openDrawer();
+        }
+        // Swipe down when drawer is open -> Close Drawer
+        else if (dy > 50 && this.state.isDrawerOpen) {
+          this.closeDrawer();
+        }
+        // Horizontal swipe on home screen -> Switch Pages
+        else if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) && !this.state.activeApp && !this.state.isShadeOpen && !this.state.isDrawerOpen) {
+          if (dx < 0 && this.state.activePage === 0) this.switchPage(1);
+          else if (dx > 0 && this.state.activePage === 1) this.switchPage(0);
+        }
+      }
+    };
+
+    // System Back Handler for Android Native Bridge
+    window.handleSystemBack = function() {
+      if (OS.state.isShadeOpen) {
+        OS.closeShade();
+        return true;
+      }
+      if (OS.state.isDrawerOpen) {
+        OS.closeDrawer();
+        return true;
+      }
+      if (OS.state.activeApp) {
+        OS.closeApp();
+        return true;
+      }
+      return false;
+    };
+
+    // Boot system on load
+    window.addEventListener('DOMContentLoaded', () => {
+      OS.init();
+    });
+  </script>
+</body>
+</html>
